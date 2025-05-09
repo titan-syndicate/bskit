@@ -40,6 +40,7 @@ import {
   SparklesIcon,
   Square2StackIcon,
   TicketIcon,
+  CommandLineIcon,
 } from '@heroicons/react/20/solid'
 import { usePathname } from 'next/navigation'
 
@@ -75,7 +76,7 @@ export function ApplicationLayout({
   events: Awaited<ReturnType<typeof getEvents>>
   children: React.ReactNode
 }) {
-  let pathname = usePathname()
+  let pathname = usePathname() ?? ''
 
   return (
     <SidebarLayout
@@ -137,6 +138,10 @@ export function ApplicationLayout({
               <SidebarItem href="/orders" current={pathname.startsWith('/orders')}>
                 <TicketIcon />
                 <SidebarLabel>Orders</SidebarLabel>
+              </SidebarItem>
+              <SidebarItem href="/terminal" current={pathname.startsWith('/terminal')}>
+                <CommandLineIcon />
+                <SidebarLabel>Terminal</SidebarLabel>
               </SidebarItem>
               <SidebarItem href="/settings" current={pathname.startsWith('/settings')}>
                 <Cog6ToothIcon />
