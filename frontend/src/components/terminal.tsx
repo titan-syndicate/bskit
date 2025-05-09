@@ -20,66 +20,80 @@ export function TerminalComponent() {
   const terminalRef = useRef<HTMLDivElement>(null)
   const terminal = useRef<Terminal>()
   const [command, setCommand] = useState('')
+  const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
-    if (!terminalRef.current) return
+    setIsMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!terminalRef.current || !isMounted) return
 
     console.log('Initializing terminal...')
 
-    // Initialize terminal
-    const term = new Terminal({
-      cursorBlink: true,
-      fontSize: 14,
-      fontFamily: 'Menlo, Monaco, "Courier New", monospace',
-      theme: {
-        background: '#1a1a1a',
-        foreground: '#f0f0f0',
-      },
-    })
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(() => {
+      // Initialize terminal
+      const term = new Terminal({
+        cursorBlink: true,
+        fontSize: 14,
+        fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+        theme: {
+          background: '#1a1a1a',
+          foreground: '#f0f0f0',
+        },
+        rows: 24,
+        cols: 80,
+      })
 
-    // Add addons
-    const fitAddon = new FitAddon()
-    term.loadAddon(fitAddon)
-    term.loadAddon(new WebLinksAddon())
+      // Add addons
+      const fitAddon = new FitAddon()
+      term.loadAddon(fitAddon)
+      term.loadAddon(new WebLinksAddon())
 
-    // Open terminal
-    term.open(terminalRef.current)
-    fitAddon.fit()
+      // Open terminal
+      term.open(terminalRef.current!)
 
-    // Store terminal instance
-    terminal.current = term
+      // Small delay before fitting
+      setTimeout(() => {
+        fitAddon.fit()
+      }, 0)
 
-    // Write welcome message
-    term.writeln('\x1b[32mWelcome to the Dagger Terminal!\x1b[0m')
-    term.writeln('Type a command below and press Enter to execute it.')
-    term.writeln('')
+      // Store terminal instance
+      terminal.current = term
 
-    // Test write
-    term.writeln('\x1b[33mTesting terminal output...\x1b[0m')
+      // Write welcome message
+      term.writeln('\x1b[32mWelcome to the Dagger Terminal!\x1b[0m')
+      term.writeln('Type a command below and press Enter to execute it.')
+      term.writeln('')
 
-    // Listen for Dagger output
-    window.runtime.EventsOn('dagger:output', (data: string) => {
-      console.log('Received dagger:output event:', data)
-      if (terminal.current) {
-        terminal.current.write(data)
-      }
-    })
+      // Test write
+      term.writeln('\x1b[33mTesting terminal output...\x1b[0m')
 
-    window.runtime.EventsOn('dagger:error', (data: string) => {
-      console.log('Received dagger:error event:', data)
-      if (terminal.current) {
-        terminal.current.writeln(`\x1b[31mError: ${data}\x1b[0m`)
-      }
-    })
+      // Listen for Dagger output
+      window.runtime.EventsOn('dagger:output', (data: string) => {
+        console.log('Received dagger:output event:', data)
+        if (terminal.current) {
+          terminal.current.write(data)
+        }
+      })
 
-    window.runtime.EventsOn('dagger:done', (data: string) => {
-      console.log('Received dagger:done event:', data)
-      if (terminal.current) {
-        terminal.current.writeln(`\x1b[32m${data}\x1b[0m`)
-      }
-    })
+      window.runtime.EventsOn('dagger:error', (data: string) => {
+        console.log('Received dagger:error event:', data)
+        if (terminal.current) {
+          terminal.current.writeln(`\x1b[31mError: ${data}\x1b[0m`)
+        }
+      })
 
-    console.log('Terminal initialized and event listeners set up')
+      window.runtime.EventsOn('dagger:done', (data: string) => {
+        console.log('Received dagger:done event:', data)
+        if (terminal.current) {
+          terminal.current.writeln(`\x1b[32m${data}\x1b[0m`)
+        }
+      })
+
+      console.log('Terminal initialized and event listeners set up')
+    }, 100)
 
     // Cleanup
     return () => {
@@ -90,8 +104,9 @@ export function TerminalComponent() {
       if (terminal.current) {
         terminal.current.dispose()
       }
+      clearTimeout(timer)
     }
-  }, [])
+  }, [isMounted])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -110,6 +125,10 @@ export function TerminalComponent() {
         }
       }
     }
+  }
+
+  if (!isMounted) {
+    return <div className="h-[500px] w-full rounded-lg bg-[#1a1a1a] p-4" />
   }
 
   return (
