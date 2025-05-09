@@ -4,11 +4,22 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 
 	"dagger.io/dagger"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
+
+// TerminalWriter implements io.Writer to emit events to the terminal
+type TerminalWriter struct {
+	ctx context.Context
+}
+
+func (w *TerminalWriter) Write(p []byte) (n int, err error) {
+	// Convert the bytes to a string and emit it as an event
+	line := string(p)
+	runtime.EventsEmit(w.ctx, "dagger:output", line)
+	return len(p), nil
+}
 
 // App struct
 type App struct {
@@ -56,17 +67,17 @@ func (a *App) Greet(name string) string {
 
 // RunDaggerCommand executes a Dagger command using the SDK
 func (a *App) RunDaggerCommand(command string) error {
-	// Create a new Dagger client
+	// Create a custom writer that emits events to the terminal
+	terminalWriter := &TerminalWriter{ctx: a.ctx}
+
+	// Create a new Dagger client with log streaming to our custom writer
 	ctx := context.Background()
-	client, err := dagger.Connect(ctx)
+	client, err := dagger.Connect(ctx, dagger.WithLogOutput(terminalWriter))
 	if err != nil {
 		runtime.EventsEmit(a.ctx, "dagger:error", "Failed to connect to Dagger: "+err.Error())
 		return err
 	}
 	defer client.Close()
-
-	// Create a simple container that logs output
-	runtime.EventsEmit(a.ctx, "dagger:output", "Starting test container...")
 
 	// Use a simple alpine container that will print some output
 	container := client.Container().
@@ -75,43 +86,24 @@ func (a *App) RunDaggerCommand(command string) error {
 			echo "Starting test sequence..."
 			sleep 1
 			echo "Step 1: Hello from the container"
-			sleep 1
+			sleep 10
 			echo "Step 2: Testing stdout capture"
-			sleep 1
+			sleep 5
 			echo "Step 3: Almost done"
-			sleep 1
+			sleep 8
 			echo "Step 4: Test complete"
 		`})
 
-	// Get both stdout and stderr
-	stdout, err := container.Stdout(ctx)
+	// Wait for the command to complete
+	exitCode, err := container.ExitCode(ctx)
 	if err != nil {
-		runtime.EventsEmit(a.ctx, "dagger:error", "Failed to get stdout: "+err.Error())
-		return err
-	}
-	stderr, err := container.Stderr(ctx)
-	if err != nil {
-		runtime.EventsEmit(a.ctx, "dagger:error", "Failed to get stderr: "+err.Error())
+		runtime.EventsEmit(a.ctx, "dagger:error", "Failed to execute container: "+err.Error())
 		return err
 	}
 
-	// Process stdout to ensure proper line breaks
-	lines := strings.Split(stdout, "\n")
-	for _, line := range lines {
-		// Trim any carriage returns and whitespace
-		line = strings.TrimSpace(line)
-		if line != "" {
-			runtime.EventsEmit(a.ctx, "dagger:output", line)
-		}
-	}
-
-	// Process stderr similarly
-	errorLines := strings.Split(stderr, "\n")
-	for _, line := range errorLines {
-		line = strings.TrimSpace(line)
-		if line != "" {
-			runtime.EventsEmit(a.ctx, "dagger:error", line)
-		}
+	if exitCode != 0 {
+		runtime.EventsEmit(a.ctx, "dagger:error", fmt.Sprintf("Command exited with code %d", exitCode))
+		return fmt.Errorf("command exited with code %d", exitCode)
 	}
 
 	runtime.EventsEmit(a.ctx, "dagger:done", "Test completed successfully")

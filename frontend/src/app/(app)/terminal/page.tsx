@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function TerminalPage() {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 max-w-4xl">
       <Heading>Terminal</Heading>
       <TerminalComponent />
     </div>

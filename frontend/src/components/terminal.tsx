@@ -19,6 +19,7 @@ declare global {
 export function TerminalComponent() {
   const terminalRef = useRef<HTMLDivElement>(null)
   const terminal = useRef<Terminal>()
+  const fitAddon = useRef<FitAddon>()
   const [isMounted, setIsMounted] = useState(false)
   const [isRuntimeReady, setIsRuntimeReady] = useState(false)
 
@@ -43,6 +44,32 @@ export function TerminalComponent() {
     checkRuntime()
   }, [isMounted])
 
+  // Handle window resize
+  useEffect(() => {
+    if (!terminal.current || !fitAddon.current) return
+
+    const handleResize = () => {
+      fitAddon.current?.fit()
+    }
+
+    // Create a ResizeObserver to watch the terminal container
+    const resizeObserver = new ResizeObserver(() => {
+      handleResize()
+    })
+
+    if (terminalRef.current) {
+      resizeObserver.observe(terminalRef.current)
+    }
+
+    // Also listen for window resize events
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      resizeObserver.disconnect()
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [isMounted, isRuntimeReady])
+
   useEffect(() => {
     if (!terminalRef.current || !isMounted || !isRuntimeReady) return
 
@@ -61,28 +88,28 @@ export function TerminalComponent() {
         },
         rows: 24,
         cols: 80,
-        convertEol: true, // This ensures proper line endings
+        convertEol: true,
       })
 
       // Add addons
-      const fitAddon = new FitAddon()
-      term.loadAddon(fitAddon)
+      const fit = new FitAddon()
+      term.loadAddon(fit)
       term.loadAddon(new WebLinksAddon())
+
+      // Store addon reference
+      fitAddon.current = fit
 
       // Open terminal
       term.open(terminalRef.current!)
 
-      // Small delay before fitting
-      setTimeout(() => {
-        fitAddon.fit()
-      }, 0)
+      // Fit the terminal to its container
+      fit.fit()
 
       // Store terminal instance
       terminal.current = term
 
       // Write welcome message
       term.writeln('\x1b[32mWelcome to the Dagger Terminal!\x1b[0m')
-      term.writeln('Starting test container...')
 
       // Listen for Dagger output
       window.runtime.EventsOn('dagger:output', (data: string) => {
@@ -136,11 +163,11 @@ export function TerminalComponent() {
   }, [isMounted, isRuntimeReady])
 
   if (!isMounted || !isRuntimeReady) {
-    return <div className="h-[500px] w-full rounded-lg bg-[#1a1a1a] p-4" />
+    return <div className="h-full w-full px-[50px]" />
   }
 
   return (
-    <div className="h-[500px] w-full rounded-lg bg-[#1a1a1a] p-4">
+    <div className="h-full w-full px-[50px]">
       <div ref={terminalRef} className="h-full w-full" />
     </div>
   )
