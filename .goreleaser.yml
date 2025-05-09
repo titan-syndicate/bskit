@@ -20,6 +20,8 @@ builds:
       pre:
         - rm -rf build/bin
         - rm -rf frontend/.next
+        - rm -rf frontend/wailsjs
+        - wails dev -generate
         - wails build -platform {{ .Os }}/{{ .Arch }}
 
 archives:
@@ -30,12 +32,10 @@ archives:
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
-    format_overrides:
-      - goos: windows
-        format: zip
+    format: tar.gz
     files:
       - README.md
-      - build/bin/bskit.app/Contents/MacOS/bskit
+      - build/bin/bskit.app
 
 changelog:
   sort: asc
