@@ -2,6 +2,8 @@ import { Heading } from '@/components/heading'
 import { TerminalComponent } from '@/components/terminal'
 import type { Metadata } from 'next'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Terminal',
 }

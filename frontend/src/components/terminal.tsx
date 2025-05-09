@@ -1,6 +1,9 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { Terminal } from 'xterm'
+import { FitAddon } from 'xterm-addon-fit'
+import { WebLinksAddon } from 'xterm-addon-web-links'
 import 'xterm/css/xterm.css'
 
 declare global {
@@ -15,68 +18,72 @@ declare global {
 
 export function TerminalComponent() {
   const terminalRef = useRef<HTMLDivElement>(null)
-  const terminal = useRef<any>()
+  const terminal = useRef<Terminal>()
   const [command, setCommand] = useState('')
-  const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
-    setIsClient(true)
-  }, [])
+    if (!terminalRef.current) return
 
-  useEffect(() => {
-    if (!terminalRef.current || !isClient) return
+    console.log('Initializing terminal...')
 
-    // Dynamically import xterm and its addons
-    Promise.all([
-      import('xterm'),
-      import('xterm-addon-fit'),
-      import('xterm-addon-web-links')
-    ]).then(([xterm, { FitAddon }, { WebLinksAddon }]) => {
-      // Initialize terminal
-      const term = new xterm.Terminal({
-        cursorBlink: true,
-        fontSize: 14,
-        fontFamily: 'Menlo, Monaco, "Courier New", monospace',
-        theme: {
-          background: '#1a1a1a',
-          foreground: '#f0f0f0',
-        },
-      })
-
-      // Add addons
-      const fitAddon = new FitAddon()
-      term.loadAddon(fitAddon)
-      term.loadAddon(new WebLinksAddon())
-
-      // Open terminal
-      term.open(terminalRef.current!)
-      fitAddon.fit()
-
-      // Store terminal instance
-      terminal.current = term
-
-      // Listen for Dagger output
-      window.runtime.EventsOn('dagger:output', (data: string) => {
-        if (terminal.current) {
-          terminal.current.write(data)
-        }
-      })
-
-      window.runtime.EventsOn('dagger:error', (data: string) => {
-        if (terminal.current) {
-          terminal.current.writeln(`\x1b[31mError: ${data}\x1b[0m`)
-        }
-      })
-
-      window.runtime.EventsOn('dagger:done', (data: string) => {
-        if (terminal.current) {
-          terminal.current.writeln(`\x1b[32m${data}\x1b[0m`)
-        }
-      })
+    // Initialize terminal
+    const term = new Terminal({
+      cursorBlink: true,
+      fontSize: 14,
+      fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+      theme: {
+        background: '#1a1a1a',
+        foreground: '#f0f0f0',
+      },
     })
+
+    // Add addons
+    const fitAddon = new FitAddon()
+    term.loadAddon(fitAddon)
+    term.loadAddon(new WebLinksAddon())
+
+    // Open terminal
+    term.open(terminalRef.current)
+    fitAddon.fit()
+
+    // Store terminal instance
+    terminal.current = term
+
+    // Write welcome message
+    term.writeln('\x1b[32mWelcome to the Dagger Terminal!\x1b[0m')
+    term.writeln('Type a command below and press Enter to execute it.')
+    term.writeln('')
+
+    // Test write
+    term.writeln('\x1b[33mTesting terminal output...\x1b[0m')
+
+    // Listen for Dagger output
+    window.runtime.EventsOn('dagger:output', (data: string) => {
+      console.log('Received dagger:output event:', data)
+      if (terminal.current) {
+        terminal.current.write(data)
+      }
+    })
+
+    window.runtime.EventsOn('dagger:error', (data: string) => {
+      console.log('Received dagger:error event:', data)
+      if (terminal.current) {
+        terminal.current.writeln(`\x1b[31mError: ${data}\x1b[0m`)
+      }
+    })
+
+    window.runtime.EventsOn('dagger:done', (data: string) => {
+      console.log('Received dagger:done event:', data)
+      if (terminal.current) {
+        terminal.current.writeln(`\x1b[32m${data}\x1b[0m`)
+      }
+    })
+
+    console.log('Terminal initialized and event listeners set up')
 
     // Cleanup
     return () => {
+      console.log('Cleaning up terminal...')
       window.runtime.EventsOff('dagger:output')
       window.runtime.EventsOff('dagger:error')
       window.runtime.EventsOff('dagger:done')
@@ -84,24 +91,25 @@ export function TerminalComponent() {
         terminal.current.dispose()
       }
     }
-  }, [isClient])
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (command.trim()) {
       try {
+        console.log('Submitting command:', command)
+        if (terminal.current) {
+          terminal.current.writeln(`\x1b[33m$ ${command}\x1b[0m`)
+        }
         await window.runtime.RunDaggerCommand(command)
         setCommand('')
       } catch (error) {
+        console.error('Error running command:', error)
         if (terminal.current) {
           terminal.current.writeln(`\x1b[31mError: ${error}\x1b[0m`)
         }
       }
     }
-  }
-
-  if (!isClient) {
-    return <div className="h-[500px] w-full rounded-lg bg-[#1a1a1a] p-4" />
   }
 
   return (
