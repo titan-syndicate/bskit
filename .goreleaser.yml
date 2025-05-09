@@ -18,6 +18,8 @@ builds:
     binary: bskit
     hooks:
       pre:
+        - rm -rf build/bin
+        - rm -rf frontend/.next
         - wails build -platform {{ .Os }}/{{ .Arch }}
 
 archives:
@@ -32,11 +34,8 @@ archives:
       - goos: windows
         format: zip
     files:
-      - LICENSE*
-      - README*
-      - CHANGELOG*
-      - docs/*
-      - build/bin/bskit*
+      - README.md
+      - build/bin/bskit.app/Contents/MacOS/bskit
 
 changelog:
   sort: asc
@@ -53,6 +52,6 @@ snapshot:
 
 release:
   github:
-    owner: your-github-username
+    owner: titan-syndicate
     name: bskit
   prerelease: auto
