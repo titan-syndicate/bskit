@@ -21,13 +21,31 @@ export function TerminalComponent() {
   const terminal = useRef<Terminal>()
   const [command, setCommand] = useState('')
   const [isMounted, setIsMounted] = useState(false)
+  const [isRuntimeReady, setIsRuntimeReady] = useState(false)
 
   useEffect(() => {
     setIsMounted(true)
   }, [])
 
+  // Wait for runtime to be available
   useEffect(() => {
-    if (!terminalRef.current || !isMounted) return
+    if (!isMounted) return
+
+    const checkRuntime = () => {
+      if (window.runtime) {
+        console.log('Runtime is ready')
+        setIsRuntimeReady(true)
+      } else {
+        console.log('Waiting for runtime...')
+        setTimeout(checkRuntime, 100)
+      }
+    }
+
+    checkRuntime()
+  }, [isMounted])
+
+  useEffect(() => {
+    if (!terminalRef.current || !isMounted || !isRuntimeReady) return
 
     console.log('Initializing terminal...')
 
@@ -98,19 +116,21 @@ export function TerminalComponent() {
     // Cleanup
     return () => {
       console.log('Cleaning up terminal...')
-      window.runtime.EventsOff('dagger:output')
-      window.runtime.EventsOff('dagger:error')
-      window.runtime.EventsOff('dagger:done')
+      if (window.runtime) {
+        window.runtime.EventsOff('dagger:output')
+        window.runtime.EventsOff('dagger:error')
+        window.runtime.EventsOff('dagger:done')
+      }
       if (terminal.current) {
         terminal.current.dispose()
       }
       clearTimeout(timer)
     }
-  }, [isMounted])
+  }, [isMounted, isRuntimeReady])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (command.trim()) {
+    if (command.trim() && window.runtime) {
       try {
         console.log('Submitting command:', command)
         if (terminal.current) {
@@ -127,7 +147,7 @@ export function TerminalComponent() {
     }
   }
 
-  if (!isMounted) {
+  if (!isMounted || !isRuntimeReady) {
     return <div className="h-[500px] w-full rounded-lg bg-[#1a1a1a] p-4" />
   }
 
