@@ -5,13 +5,13 @@ import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import { WebLinksAddon } from 'xterm-addon-web-links'
 import 'xterm/css/xterm.css'
+import { RunDaggerCommand } from '../../wailsjs/go/main/App'
 
 declare global {
   interface Window {
     runtime: {
       EventsOn: (eventName: string, callback: (data: any) => void) => void
       EventsOff: (eventName: string) => void
-      RunDaggerCommand: (command: string) => Promise<void>
     }
   }
 }
@@ -136,7 +136,7 @@ export function TerminalComponent() {
         if (terminal.current) {
           terminal.current.writeln(`\x1b[33m$ ${command}\x1b[0m`)
         }
-        await window.runtime.RunDaggerCommand(command)
+        await RunDaggerCommand(command)
         setCommand('')
       } catch (error) {
         console.error('Error running command:', error)
