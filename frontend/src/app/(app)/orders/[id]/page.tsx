@@ -11,16 +11,37 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { RefundOrder } from './refund'
 
+// Add this function to generate static params
+export async function generateStaticParams() {
+  // For static build, we'll use a predefined set of IDs
+  return [
+    { id: '3000' },
+    { id: '3001' },
+    { id: '3002' },
+    { id: '3003' },
+    { id: '3004' },
+    { id: '3005' },
+    { id: '3006' },
+    { id: '3007' },
+    { id: '3008' },
+  ]
+}
+
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  let order = await getOrder(params.id)
+  const order = await getOrder(params.id)
+  if (!order) {
+    return {
+      title: 'Order Not Found',
+    }
+  }
 
   return {
-    title: order && `Order #${order.id}`,
+    title: `Order #${order.id}`,
   }
 }
 
 export default async function Order({ params }: { params: { id: string } }) {
-  let order = await getOrder(params.id)
+  const order = await getOrder(params.id)
 
   if (!order) {
     notFound()

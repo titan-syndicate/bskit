@@ -4,22 +4,38 @@ import { Button } from '@/components/button'
 import { Heading, Subheading } from '@/components/heading'
 import { Link } from '@/components/link'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/table'
-import { getEvent, getEventOrders } from '@/data'
+import { getEvent, getEventOrders, getEvents } from '@/data'
 import { ChevronLeftIcon } from '@heroicons/react/16/solid'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
+// Add this function to generate static params
+export async function generateStaticParams() {
+  // For static build, we'll use a predefined set of IDs
+  return [
+    { id: '1000' },
+    { id: '1001' },
+    { id: '1002' },
+    { id: '1003' },
+  ]
+}
+
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  let event = await getEvent(params.id)
+  const event = await getEvent(params.id)
+  if (!event) {
+    return {
+      title: 'Event Not Found',
+    }
+  }
 
   return {
-    title: event?.name,
+    title: event.name,
   }
 }
 
 export default async function Event({ params }: { params: { id: string } }) {
-  let event = await getEvent(params.id)
-  let orders = await getEventOrders(params.id)
+  const event = await getEvent(params.id)
+  const orders = await getEventOrders(params.id)
 
   if (!event) {
     notFound()
