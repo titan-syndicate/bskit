@@ -19,10 +19,8 @@ declare global {
 export function TerminalComponent() {
   const terminalRef = useRef<HTMLDivElement>(null)
   const terminal = useRef<Terminal>()
-  const [command, setCommand] = useState('')
   const [isMounted, setIsMounted] = useState(false)
   const [isRuntimeReady, setIsRuntimeReady] = useState(false)
-  const [isExecuting, setIsExecuting] = useState(false)
 
   useEffect(() => {
     setIsMounted(true)
@@ -63,6 +61,7 @@ export function TerminalComponent() {
         },
         rows: 24,
         cols: 80,
+        convertEol: true, // This ensures proper line endings
       })
 
       // Add addons
@@ -83,19 +82,14 @@ export function TerminalComponent() {
 
       // Write welcome message
       term.writeln('\x1b[32mWelcome to the Dagger Terminal!\x1b[0m')
-      term.writeln('Type a command below and press Enter to execute it.')
-      term.writeln('')
-      writePrompt(term)
+      term.writeln('Starting test container...')
 
       // Listen for Dagger output
       window.runtime.EventsOn('dagger:output', (data: string) => {
         console.log('Received dagger:output event:', data)
         const term = terminal.current
         if (term) {
-          // Write each line without indentation
-          data.split('\n').forEach(line => {
-            term.writeln(line.trim())
-          })
+          term.writeln(data)
         }
       })
 
@@ -103,11 +97,7 @@ export function TerminalComponent() {
         console.log('Received dagger:error event:', data)
         const term = terminal.current
         if (term) {
-          // Write each line without indentation
-          data.split('\n').forEach(line => {
-            term.writeln(line.trim())
-          })
-          writePrompt(term)
+          term.writeln(`\x1b[31m${data}\x1b[0m`)
         }
       })
 
@@ -115,12 +105,15 @@ export function TerminalComponent() {
         console.log('Received dagger:done event:', data)
         const term = terminal.current
         if (term) {
-          // Write each line without indentation
-          data.split('\n').forEach(line => {
-            term.writeln(line.trim())
-          })
-          writePrompt(term)
-          setIsExecuting(false)
+          term.writeln(`\x1b[32m${data}\x1b[0m`)
+        }
+      })
+
+      // Start the test command
+      RunDaggerCommand("test").catch(error => {
+        console.error('Error running command:', error)
+        if (terminal.current) {
+          terminal.current.writeln(`\x1b[31mError: ${error}\x1b[0m`)
         }
       })
 
@@ -142,58 +135,13 @@ export function TerminalComponent() {
     }
   }, [isMounted, isRuntimeReady])
 
-  const writePrompt = (term: Terminal) => {
-    term.write('\r\n\x1b[32m$ \x1b[0m')
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (command.trim() && window.runtime && !isExecuting) {
-      try {
-        setIsExecuting(true)
-        console.log('Submitting command:', command)
-        if (terminal.current) {
-          terminal.current.writeln(`\x1b[33m$ ${command}\x1b[0m`)
-        }
-        await RunDaggerCommand(command)
-        setCommand('')
-      } catch (error) {
-        console.error('Error running command:', error)
-        if (terminal.current) {
-          terminal.current.writeln(`\x1b[31mError: ${error}\x1b[0m`)
-          writePrompt(terminal.current)
-        }
-        setIsExecuting(false)
-      }
-    }
-  }
-
   if (!isMounted || !isRuntimeReady) {
     return <div className="h-[500px] w-full rounded-lg bg-[#1a1a1a] p-4" />
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="h-[500px] w-full rounded-lg bg-[#1a1a1a] p-4">
-        <div ref={terminalRef} className="h-full w-full" />
-      </div>
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <input
-          type="text"
-          value={command}
-          onChange={(e) => setCommand(e.target.value)}
-          placeholder="Enter Dagger command..."
-          className="flex-1 rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:placeholder:text-zinc-400"
-          disabled={isExecuting}
-        />
-        <button
-          type="submit"
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={isExecuting}
-        >
-          {isExecuting ? 'Running...' : 'Run'}
-        </button>
-      </form>
+    <div className="h-[500px] w-full rounded-lg bg-[#1a1a1a] p-4">
+      <div ref={terminalRef} className="h-full w-full" />
     </div>
   )
 }

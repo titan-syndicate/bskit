@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"dagger.io/dagger"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -59,91 +60,60 @@ func (a *App) RunDaggerCommand(command string) error {
 	ctx := context.Background()
 	client, err := dagger.Connect(ctx)
 	if err != nil {
-		runtime.EventsEmit(a.ctx, "dagger:error", "\r\nFailed to connect to Dagger: "+err.Error()+"\r\n")
+		runtime.EventsEmit(a.ctx, "dagger:error", "Failed to connect to Dagger: "+err.Error())
 		return err
 	}
 	defer client.Close()
 
-	// Create kind config file
-	runtime.EventsEmit(a.ctx, "dagger:output", "\r\nCreating kind config...\r\n")
-	kindConfig := `kind: Cluster
-apiVersion: kind.x-k8s.io/v1alpha4
-nodes:
-- role: control-plane
-  extraPortMappings:
-  - containerPort: 80
-    hostPort: 8080
-    protocol: TCP`
+	// Create a simple container that logs output
+	runtime.EventsEmit(a.ctx, "dagger:output", "Starting test container...")
 
-	// Create a container with kind installed
-	runtime.EventsEmit(a.ctx, "dagger:output", "\r\nSetting up kind container...\r\n")
-	kind := client.Container().
-		From("golang:1.21").
-		WithExec([]string{"sh", "-c", "go install sigs.k8s.io/kind@latest"}).
-		WithNewFile("/kind-config.yaml", kindConfig).
-		WithExec([]string{"kind", "create", "cluster", "--config", "/kind-config.yaml", "--name", "dagger-test"})
+	// Use a simple alpine container that will print some output
+	container := client.Container().
+		From("alpine:latest").
+		WithExec([]string{"sh", "-c", `
+			echo "Starting test sequence..."
+			sleep 1
+			echo "Step 1: Hello from the container"
+			sleep 1
+			echo "Step 2: Testing stdout capture"
+			sleep 1
+			echo "Step 3: Almost done"
+			sleep 1
+			echo "Step 4: Test complete"
+		`})
 
-	// Get kind cluster creation output
-	runtime.EventsEmit(a.ctx, "dagger:output", "\r\nCreating Kubernetes cluster...\r\n")
-	kindOutput, err := kind.Stdout(ctx)
+	// Get both stdout and stderr
+	stdout, err := container.Stdout(ctx)
 	if err != nil {
-		runtime.EventsEmit(a.ctx, "dagger:error", "\r\nFailed to create kind cluster: "+err.Error()+"\r\n")
+		runtime.EventsEmit(a.ctx, "dagger:error", "Failed to get stdout: "+err.Error())
 		return err
 	}
-	runtime.EventsEmit(a.ctx, "dagger:output", "\r\n"+kindOutput+"\r\n")
-
-	// Create kubectl container to interact with the cluster
-	runtime.EventsEmit(a.ctx, "dagger:output", "\r\nSetting up kubectl...\r\n")
-	kubectl := client.Container().
-		From("bitnami/kubectl:latest").
-		WithFile("/root/.kube/config", kind.File("/root/.kube/config")).
-		WithExec([]string{"kubectl", "get", "nodes"})
-
-	// Get node status
-	runtime.EventsEmit(a.ctx, "dagger:output", "\r\nChecking cluster status...\r\n")
-	nodeStatus, err := kubectl.Stdout(ctx)
+	stderr, err := container.Stderr(ctx)
 	if err != nil {
-		runtime.EventsEmit(a.ctx, "dagger:error", "\r\nFailed to get node status: "+err.Error()+"\r\n")
+		runtime.EventsEmit(a.ctx, "dagger:error", "Failed to get stderr: "+err.Error())
 		return err
 	}
-	runtime.EventsEmit(a.ctx, "dagger:output", "\r\n"+nodeStatus+"\r\n")
 
-	// Deploy nginx
-	runtime.EventsEmit(a.ctx, "dagger:output", "\r\nDeploying nginx...\r\n")
-	deploy := kubectl.
-		WithExec([]string{"kubectl", "create", "deployment", "nginx", "--image=nginx:latest"})
-
-	deployOutput, err := deploy.Stdout(ctx)
-	if err != nil {
-		runtime.EventsEmit(a.ctx, "dagger:error", "\r\nFailed to deploy nginx: "+err.Error()+"\r\n")
-		return err
+	// Process stdout to ensure proper line breaks
+	lines := strings.Split(stdout, "\n")
+	for _, line := range lines {
+		// Trim any carriage returns and whitespace
+		line = strings.TrimSpace(line)
+		if line != "" {
+			runtime.EventsEmit(a.ctx, "dagger:output", line)
+		}
 	}
-	runtime.EventsEmit(a.ctx, "dagger:output", "\r\n"+deployOutput+"\r\n")
 
-	// Expose the deployment
-	runtime.EventsEmit(a.ctx, "dagger:output", "\r\nExposing nginx service...\r\n")
-	expose := kubectl.
-		WithExec([]string{"kubectl", "expose", "deployment", "nginx", "--port=80", "--type=NodePort"})
-
-	exposeOutput, err := expose.Stdout(ctx)
-	if err != nil {
-		runtime.EventsEmit(a.ctx, "dagger:error", "\r\nFailed to expose nginx: "+err.Error()+"\r\n")
-		return err
+	// Process stderr similarly
+	errorLines := strings.Split(stderr, "\n")
+	for _, line := range errorLines {
+		line = strings.TrimSpace(line)
+		if line != "" {
+			runtime.EventsEmit(a.ctx, "dagger:error", line)
+		}
 	}
-	runtime.EventsEmit(a.ctx, "dagger:output", "\r\n"+exposeOutput+"\r\n")
 
-	// Get service details
-	runtime.EventsEmit(a.ctx, "dagger:output", "\r\nGetting service details...\r\n")
-	serviceInfo := kubectl.
-		WithExec([]string{"kubectl", "get", "svc", "nginx"})
-
-	serviceOutput, err := serviceInfo.Stdout(ctx)
-	if err != nil {
-		runtime.EventsEmit(a.ctx, "dagger:error", "\r\nFailed to get service info: "+err.Error()+"\r\n")
-		return err
-	}
-	runtime.EventsEmit(a.ctx, "dagger:output", "\r\n"+serviceOutput+"\r\n")
-
-	runtime.EventsEmit(a.ctx, "dagger:done", "\r\nKubernetes cluster setup and nginx deployment completed successfully\r\n")
+	runtime.EventsEmit(a.ctx, "dagger:done", "Test completed successfully")
 	return nil
 }
