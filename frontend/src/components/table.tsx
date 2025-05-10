@@ -47,9 +47,9 @@ export function TableRow({ children, href, title, className = '' }: TableRowProp
   return content;
 }
 
-export function TableHeader({ children }: { children: ReactNode }) {
+export function TableHeader({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+    <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 ${className}`}>
       {children}
     </th>
   );
