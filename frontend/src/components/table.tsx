@@ -10,6 +10,7 @@ interface TableRowProps {
   children: ReactNode;
   href?: string;
   title?: string;
+  className?: string;
 }
 
 export function Table({ children, className = '' }: TableProps) {
@@ -28,9 +29,9 @@ export function TableBody({ children }: { children: ReactNode }) {
   return <tbody className="divide-y divide-gray-200 bg-white">{children}</tbody>;
 }
 
-export function TableRow({ children, href, title }: TableRowProps) {
+export function TableRow({ children, href, title, className = '' }: TableRowProps) {
   const content = (
-    <tr className="hover:bg-gray-50">
+    <tr className={`hover:bg-gray-50 ${className}`}>
       {children}
     </tr>
   );
