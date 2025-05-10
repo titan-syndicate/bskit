@@ -2,3 +2,7 @@ build/bin
 node_modules
 frontend/dist
 output/
+# macOS system files
+.DS_Store
+**/.DS_Store
+**/._.DS_Store
