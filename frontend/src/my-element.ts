@@ -1,7 +1,7 @@
-import {css, html, LitElement} from 'lit'
+import { css, html, LitElement } from 'lit'
 import logo from './assets/images/logo-universal.png'
-import {Greet} from "../wailsjs/go/main/App";
-import {customElement, property} from 'lit/decorators.js'
+import { Greet } from "../wailsjs/go/main/App";
+import { customElement, property } from 'lit/decorators.js'
 import './style.css';
 
 /**
@@ -12,7 +12,7 @@ import './style.css';
  */
 @customElement('my-element')
 export class MyElement extends LitElement {
-    static styles = css`
+  static styles = css`
   #logo {
     display: block;
     width: 50%;
@@ -70,20 +70,20 @@ export class MyElement extends LitElement {
 
     `
 
-    @property()
-    resultText = "Please enter your name below 👇"
+  @property()
+  resultText = "Please enter your name below 👇"
 
-    greet() {
-        let thisName = (this.shadowRoot?.getElementById('name') as HTMLInputElement)?.value;
-        if (thisName) {
-            Greet(thisName).then(result => {
-                this.resultText = result
-            });
-        }
+  greet() {
+    let thisName = (this.shadowRoot?.getElementById('name') as HTMLInputElement)?.value;
+    if (thisName) {
+      Greet(thisName).then(result => {
+        this.resultText = result
+      });
     }
+  }
 
-    render() {
-        return html`
+  render() {
+    return html`
             <main>
                 <img id="logo" src=${logo} alt="Wails logo">
                 <div class="result" id="result">${this.resultText}</div>
@@ -93,11 +93,11 @@ export class MyElement extends LitElement {
                 </div>
             </main>
         `
-    }
+  }
 }
 
 declare global {
-    interface HTMLElementTagNameMap {
-        'my-element': MyElement
-    }
+  interface HTMLElementTagNameMap {
+    'my-element': MyElement
+  }
 }
