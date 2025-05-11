@@ -4,7 +4,7 @@ import { FitAddon } from 'xterm-addon-fit'
 import { WebLinksAddon } from 'xterm-addon-web-links'
 import { Heading } from '../components/heading'
 import { Divider } from '../components/divider'
-import { EventsOn } from 'wailsjs/runtime/runtime'
+import { EventsOn, EventsEmit } from 'wailsjs/runtime/runtime'
 import { StartTerminalLogs } from 'wailsjs/go/main/App'
 import 'xterm/css/xterm.css'
 
@@ -59,7 +59,26 @@ export default function TerminalPage() {
       theme: {
         background: '#09090b', // zinc-950
         foreground: '#ffffff',
+        // Add more colors for syntax highlighting
+        black: '#000000',
+        red: '#ef4444',    // red-500
+        green: '#22c55e',  // green-500
+        yellow: '#eab308', // yellow-500
+        blue: '#3b82f6',   // blue-500
+        magenta: '#d946ef', // fuchsia-500
+        cyan: '#06b6d4',   // cyan-500
+        white: '#f8fafc',  // slate-50
+        brightBlack: '#475569',   // slate-600
+        brightRed: '#f87171',     // red-400
+        brightGreen: '#4ade80',   // green-400
+        brightYellow: '#facc15',  // yellow-400
+        brightBlue: '#60a5fa',    // blue-400
+        brightMagenta: '#e879f9', // fuchsia-400
+        brightCyan: '#22d3ee',    // cyan-400
+        brightWhite: '#f1f5f9',   // slate-100
       },
+      // Enable true color support
+      allowTransparency: true,
     })
 
     // Add addons
@@ -74,13 +93,16 @@ export default function TerminalPage() {
     // Store terminal instance
     terminalInstance.current = term
 
-    // Start receiving logs from backend
-    StartTerminalLogs()
-
-    // Set up event listener for logs
+    // Set up event listener for logs first
     const unsubscribe = EventsOn("terminal:log", (log: TerminalLog) => {
       term.writeln(log.content)
     })
+
+    // Notify backend that we're ready to receive logs
+    EventsEmit("terminal:ready")
+
+    // Start receiving logs from backend
+    StartTerminalLogs()
 
     // Cleanup
     return () => {
