@@ -208,9 +208,9 @@ export function DefaultSidebar() {
             <ShoppingBagIcon className="size-5" />
             <SidebarLabel>Orders</SidebarLabel>
           </SidebarItem>
-          <SidebarItem to="/terminal" current={location.pathname.startsWith('/terminal')}>
+          <SidebarItem to="/build" current={location.pathname.startsWith('/terminal')}>
             <CommandLineIcon className="size-5" />
-            <SidebarLabel>Terminal</SidebarLabel>
+            <SidebarLabel>Build</SidebarLabel>
           </SidebarItem>
         </SidebarSection>
         <SidebarItem to="/settings" current={location.pathname === '/settings'}>

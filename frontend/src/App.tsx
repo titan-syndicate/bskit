@@ -22,7 +22,7 @@ export default function App() {
           <Route path="/orders" element={<Orders />} />
           <Route path="/orders/:id" element={<OrderDetails />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/terminal" element={<TerminalPage />} />
+          <Route path="/build" element={<TerminalPage />} />
         </Route>
       </Routes>
     </HelmetProvider>

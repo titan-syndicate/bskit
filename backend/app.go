@@ -1,89 +1,72 @@
-package main
+package backend
 
 import (
 	"context"
-	"embed"
 	"fmt"
 	"log"
+	"path/filepath"
 
-	"bskit/backend/terminal"
+	"bskit/backend/pack"
 
-	"github.com/wailsapp/wails/v2"
-	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-//go:embed all:frontend/dist
-var assets embed.FS
-
-func main() {
-	app := NewApp()
-
-	err := wails.Run(&options.App{
-		Title:            "BSKit",
-		Width:            1024,
-		Height:           768,
-		Assets:           assets,
-		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 59, A: 1},
-		OnStartup:        app.startup,
-		Bind: []interface{}{
-			app,
-		},
-	})
-
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
+// App struct
 type App struct {
-	ctx       context.Context
-	readyChan chan struct{}
-	eventCtx  context.Context
+	ctx         context.Context
+	readyChan   chan struct{}
+	eventCtx    context.Context
+	packBuilder *pack.PackBuilder
 }
 
+// NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{
 		readyChan: make(chan struct{}),
 	}
 }
 
-func (a *App) startup(ctx context.Context) {
+// Startup is called when the app starts. The context is saved
+// so we can call the runtime methods
+func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
 	a.eventCtx = ctx
 
 	fmt.Printf("Setting up event listeners...\n")
 
+	// Initialize pack builder
+	var err error
+	a.packBuilder, err = pack.NewPackBuilder(ctx)
+	if err != nil {
+		log.Printf("Failed to initialize pack builder: %v", err)
+		return
+	}
+
 	// Set up event listener for when frontend connects
 	runtime.EventsOn(a.eventCtx, "terminal:ready", func(data ...interface{}) {
 		fmt.Printf("Received terminal:ready event\n")
-		close(a.readyChan)
-	})
-
-	// Try EventsOnce instead of EventsOn
-	runtime.EventsOnce(a.eventCtx, "terminal:log", func(data ...interface{}) {
-		fmt.Printf("Backend received terminal:log event with data: %v\n", data)
-		// Re-register the listener since EventsOnce only fires once
-		runtime.EventsOnce(a.eventCtx, "terminal:log", func(data ...interface{}) {
-			fmt.Printf("Backend received terminal:log event with data: %v\n", data)
-		})
+		select {
+		case <-a.readyChan:
+			// Channel already closed, do nothing
+		default:
+			close(a.readyChan)
+		}
 	})
 
 	fmt.Printf("Event listeners set up complete\n")
 }
 
-// StartTerminalLogs starts streaming terminal logs to the frontend
-func (a *App) StartTerminalLogs() {
-	logChan := terminal.GenerateLogs()
+// StartBuild starts the build process using pack CLI
+func (a *App) StartBuild() {
+	// Get the absolute path to the test-app directory
+	absPath, err := filepath.Abs("test-app")
+	if err != nil {
+		runtime.EventsEmit(a.ctx, "terminal:log", fmt.Sprintf("Error: failed to get absolute path: %v", err))
+		return
+	}
 
-	go func() {
-		// Wait for frontend to be ready
-		<-a.readyChan
-		fmt.Printf("Frontend is ready, starting to emit logs\n")
-
-		// Now start emitting logs
-		for log := range logChan {
-			runtime.EventsEmit(a.ctx, "terminal:log", log)
-		}
-	}()
+	// Start the build process
+	if err := a.packBuilder.Build(absPath); err != nil {
+		runtime.EventsEmit(a.ctx, "terminal:log", fmt.Sprintf("Error: build failed: %v", err))
+	}
 }

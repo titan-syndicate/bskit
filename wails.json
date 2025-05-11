@@ -7,6 +7,7 @@
   "frontend:dev:watcher": "npm run dev",
   "frontend:dev:serverUrl": "auto",
   "frontend:dir": "frontend",
+  "backend:dir": "backend",
   "author": {
     "name": "Rian Fowler",
     "email": "4998130+rianfowler@users.noreply.github.com"

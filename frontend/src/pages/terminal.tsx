@@ -1,11 +1,12 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import { WebLinksAddon } from 'xterm-addon-web-links'
 import { Heading } from '../components/heading'
 import { Divider } from '../components/divider'
-import { EventsOn, EventsEmit } from 'wailsjs/runtime/runtime'
-import { StartTerminalLogs } from 'wailsjs/go/main/App'
+import { EventsOn, EventsEmit } from '../../wailsjs/runtime/runtime'
+import { StartBuild } from '../../wailsjs/go/backend/App'
+import { Button } from '../components/button'
 import 'xterm/css/xterm.css'
 
 // Custom scrollbar styles
@@ -34,14 +35,10 @@ const scrollbarStyles = `
   }
 `
 
-interface TerminalLog {
-  content: string
-  timestamp: string
-}
-
 export default function TerminalPage() {
   const terminalRef = useRef<HTMLDivElement>(null)
   const terminalInstance = useRef<Terminal | null>(null)
+  const [isBuilding, setIsBuilding] = useState(false)
 
   useEffect(() => {
     // Add scrollbar styles
@@ -93,16 +90,13 @@ export default function TerminalPage() {
     // Store terminal instance
     terminalInstance.current = term
 
-    // Set up event listener for logs first
-    const unsubscribe = EventsOn("terminal:log", (log: TerminalLog) => {
-      term.writeln(log.content)
+    // Set up event listener for logs
+    const unsubscribe = EventsOn("terminal:log", (log: string) => {
+      term.writeln(log)
     })
 
-    // Notify backend that we're ready to receive logs
+    // Notify backend that we're ready
     EventsEmit("terminal:ready")
-
-    // Start receiving logs from backend
-    StartTerminalLogs()
 
     // Cleanup
     return () => {
@@ -112,12 +106,39 @@ export default function TerminalPage() {
     }
   }, [])
 
+  const handleBuild = async () => {
+    if (isBuilding) return
+
+    setIsBuilding(true)
+    const term = terminalInstance.current
+    if (term) {
+      term.writeln('\r\n\x1b[1;34mStarting build process...\x1b[0m\r\n')
+    }
+
+    try {
+      await StartBuild()
+    } catch (error) {
+      if (term) {
+        term.writeln(`\r\n\x1b[1;31mBuild failed: ${error}\x1b[0m\r\n`)
+      }
+    } finally {
+      setIsBuilding(false)
+    }
+  }
+
   return (
     <>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="max-sm:w-full sm:flex-1">
-          <Heading>Terminal</Heading>
+          <Heading>Build</Heading>
         </div>
+        <Button
+          onClick={handleBuild}
+          disabled={isBuilding}
+          className={isBuilding ? 'opacity-50 cursor-not-allowed' : ''}
+        >
+          {isBuilding ? 'Building...' : 'Start Build'}
+        </Button>
       </div>
       <div className="mt-4">
         <Divider />
