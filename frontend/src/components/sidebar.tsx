@@ -17,6 +17,7 @@ import {
   PlusIcon,
   QuestionMarkCircleIcon,
   SparklesIcon,
+  CommandLineIcon,
 } from '@heroicons/react/24/solid'
 import { Avatar } from './avatar'
 import { Dropdown, DropdownButton, DropdownDivider, DropdownItem, DropdownLabel, DropdownMenu } from './dropdown'
@@ -206,6 +207,10 @@ export function DefaultSidebar() {
           <SidebarItem to="/orders" current={location.pathname.startsWith('/orders')}>
             <ShoppingBagIcon className="size-5" />
             <SidebarLabel>Orders</SidebarLabel>
+          </SidebarItem>
+          <SidebarItem to="/terminal" current={location.pathname.startsWith('/terminal')}>
+            <CommandLineIcon className="size-5" />
+            <SidebarLabel>Terminal</SidebarLabel>
           </SidebarItem>
         </SidebarSection>
         <SidebarItem to="/settings" current={location.pathname === '/settings'}>
