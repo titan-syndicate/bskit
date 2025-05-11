@@ -54,8 +54,8 @@ export function DropdownItem({
   className,
   ...props
 }: { className?: string } & (
-  | Omit<Headless.MenuItemProps<'button'>, 'as' | 'className'>
-  | Omit<Headless.MenuItemProps<typeof Link>, 'as' | 'className'>
+  | (Omit<Headless.MenuItemProps<'button'>, 'as' | 'className'> & { href?: undefined })
+  | (Omit<Headless.MenuItemProps<typeof Link>, 'as' | 'className'> & { href: string })
 )) {
   let classes = clsx(
     className,
@@ -78,11 +78,14 @@ export function DropdownItem({
     '*:data-[slot=avatar]:mr-2.5 *:data-[slot=avatar]:-ml-1 *:data-[slot=avatar]:size-6 sm:*:data-[slot=avatar]:mr-2 sm:*:data-[slot=avatar]:size-5'
   )
 
-  return 'href' in props ? (
-    <Headless.MenuItem as={Link} {...props} className={classes} />
-  ) : (
-    <Headless.MenuItem as="button" type="button" {...props} className={classes} />
-  )
+  if ('href' in props && props.href) {
+    // For React Router, use 'to' instead of 'href' for our custom Link
+    const { href, to: _to, ...rest } = props
+    return <Headless.MenuItem as={Link} to={href} {...rest} className={classes} />
+  }
+  // Only pass button-appropriate props
+  const buttonProps = props as Omit<Headless.MenuItemProps<'button'>, 'as' | 'className'>
+  return <Headless.MenuItem as="button" {...buttonProps} className={classes} type="button" />
 }
 
 export function DropdownHeader({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
