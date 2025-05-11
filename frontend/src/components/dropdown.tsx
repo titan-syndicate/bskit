@@ -75,7 +75,9 @@ export function DropdownItem({
     '*:data-[slot=icon]:col-start-1 *:data-[slot=icon]:row-start-1 *:data-[slot=icon]:mr-2.5 *:data-[slot=icon]:-ml-0.5 *:data-[slot=icon]:size-5 sm:*:data-[slot=icon]:mr-2 sm:*:data-[slot=icon]:size-4',
     '*:data-[slot=icon]:text-zinc-500 data-hover:*:data-[slot=icon]:text-zinc-950 dark:*:data-[slot=icon]:text-zinc-400 dark:data-hover:*:data-[slot=icon]:text-white',
     // Avatar
-    '*:data-[slot=avatar]:mr-2.5 *:data-[slot=avatar]:-ml-1 *:data-[slot=avatar]:size-6 sm:*:data-[slot=avatar]:mr-2 sm:*:data-[slot=avatar]:size-5'
+    '*:data-[slot=avatar]:mr-2.5 *:data-[slot=avatar]:-ml-1 *:data-[slot=avatar]:size-6 sm:*:data-[slot=avatar]:mr-2 sm:*:data-[slot=avatar]:size-5',
+    // Ensure text colors cascade to children
+    '[&>*]:text-zinc-950 [&>*]:dark:text-white'
   )
 
   if ('href' in props && props.href) {
@@ -146,7 +148,7 @@ export function DropdownLabel({
     <Headless.Label
       {...props}
       data-slot="label"
-      className={clsx(className, 'col-start-2 row-start-1 truncate')}
+      className={clsx(className, 'col-start-2 row-start-1 truncate text-zinc-950 dark:text-white')}
     />
   )
 }
