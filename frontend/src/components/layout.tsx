@@ -1,9 +1,11 @@
 import { Helmet } from 'react-helmet-async'
 import { Outlet } from 'react-router-dom'
 import { DefaultSidebar } from './sidebar'
-import { Navbar, NavbarSection, NavbarSpacer } from './navbar'
+import { Navbar, NavbarSection, NavbarSpacer, NavbarItem } from './navbar'
 import { SidebarLayout } from './sidebar-layout'
-import { UserCircleIcon } from '@heroicons/react/24/solid'
+import { Dropdown, DropdownButton } from './dropdown'
+import { Avatar } from './avatar'
+import { AccountDropdownMenu } from './account-dropdown-menu'
 
 interface LayoutProps {
   title?: string
@@ -22,9 +24,12 @@ export function Layout({ title = 'BSKit', description = 'Event management platfo
           <Navbar>
             <NavbarSpacer />
             <NavbarSection>
-              <div className="flex items-center gap-4">
-                {/* Add user menu here if needed */}
-              </div>
+              <Dropdown>
+                <DropdownButton as={NavbarItem}>
+                  <Avatar src="/users/erica.jpg" square data-slot="avatar" />
+                </DropdownButton>
+                <AccountDropdownMenu anchor="bottom end" />
+              </Dropdown>
             </NavbarSection>
           </Navbar>
         }

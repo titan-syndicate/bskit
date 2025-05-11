@@ -28,11 +28,16 @@ interface NavbarSectionProps {
 }
 
 export function Navbar({ children }: NavbarProps) {
-  return <nav className="flex h-16 items-center justify-between gap-4 border-b border-zinc-200 bg-white px-4 dark:border-zinc-800 dark:bg-zinc-900 sm:px-6 lg:px-8">{children}</nav>
+  return <nav className="flex flex-1 items-center gap-4 py-2.5">{children}</nav>
 }
 
 export function NavbarSection({ children }: NavbarSectionProps) {
-  return <div className="flex items-center gap-4">{children}</div>
+  let id = useId()
+  return (
+    <LayoutGroup id={id}>
+      <div className="flex items-center gap-3">{children}</div>
+    </LayoutGroup>
+  )
 }
 
 export function NavbarDivider({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
@@ -110,17 +115,14 @@ export function NavbarLabel({ className, ...props }: React.ComponentPropsWithout
 
 export function UserNavbar({ children }: { children?: React.ReactNode }) {
   return (
-    <Navbar>
+    <div className="flex items-center gap-3">
       {children}
-      <NavbarSpacer />
-      <NavbarSection>
-        <Dropdown>
-          <DropdownButton as={NavbarItem}>
-            <Avatar src="/users/erica.jpg" square data-slot="avatar" />
-          </DropdownButton>
-          <AccountDropdownMenu anchor="bottom end" />
-        </Dropdown>
-      </NavbarSection>
-    </Navbar>
+      <Dropdown>
+        <DropdownButton as={NavbarItem}>
+          <Avatar src="/users/erica.jpg" square data-slot="avatar" />
+        </DropdownButton>
+        <AccountDropdownMenu anchor="bottom end" />
+      </Dropdown>
+    </div>
   )
 }
