@@ -6,9 +6,17 @@ import { LayoutGroup, motion } from 'framer-motion'
 import React, { forwardRef, useId } from 'react'
 import { TouchTarget } from './button'
 import { Link } from './link'
+import { useLocation } from 'react-router-dom'
+import {
+  HomeIcon,
+  CalendarIcon,
+  ShoppingBagIcon,
+  Cog6ToothIcon,
+} from '@heroicons/react/24/solid'
 
 export function Sidebar({ className, ...props }: React.ComponentPropsWithoutRef<'nav'>) {
-  return <nav {...props} className={clsx(className, 'flex h-full min-h-0 flex-col')} />
+  // return <nav {...props} className={clsx(className, 'flex h-full min-h-0 flex-col bg-white dark:bg-zinc-900')} />
+  return <nav {...props} className={clsx(className, 'flex h-full min-h-0 flex-col ')} />
 }
 
 export function SidebarHeader({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
@@ -79,7 +87,7 @@ export const SidebarItem = forwardRef(function SidebarItem(
     ...props
   }: { current?: boolean; className?: string; children: React.ReactNode } & (
     | Omit<Headless.ButtonProps, 'as' | 'className'>
-    | Omit<Headless.ButtonProps<typeof Link>, 'as' | 'className'>
+    | Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className'>
   ),
   ref: React.ForwardedRef<HTMLAnchorElement | HTMLButtonElement>
 ) {
@@ -113,16 +121,14 @@ export const SidebarItem = forwardRef(function SidebarItem(
           className="absolute inset-y-2 -left-4 w-0.5 rounded-full bg-zinc-950 dark:bg-white"
         />
       )}
-      {'href' in props ? (
-        <Headless.CloseButton
-          as={Link}
+      {'to' in props ? (
+        <Link
           {...props}
           className={classes}
           data-current={current ? 'true' : undefined}
-          ref={ref}
         >
           <TouchTarget>{children}</TouchTarget>
-        </Headless.CloseButton>
+        </Link>
       ) : (
         <Headless.Button
           {...props}
@@ -139,4 +145,38 @@ export const SidebarItem = forwardRef(function SidebarItem(
 
 export function SidebarLabel({ className, ...props }: React.ComponentPropsWithoutRef<'span'>) {
   return <span {...props} className={clsx(className, 'truncate')} />
+}
+
+export function DefaultSidebar() {
+  const location = useLocation()
+
+  return (
+    <Sidebar className="hidden lg:flex">
+      <SidebarHeader>
+        <SidebarSection>
+          <SidebarItem to="/" current={location.pathname === '/'}>
+            <HomeIcon className="size-5" />
+            <SidebarLabel>Home</SidebarLabel>
+          </SidebarItem>
+          <SidebarItem to="/events" current={location.pathname.startsWith('/events')}>
+            <CalendarIcon className="size-5" />
+            <SidebarLabel>Events</SidebarLabel>
+          </SidebarItem>
+          <SidebarItem to="/orders" current={location.pathname.startsWith('/orders')}>
+            <ShoppingBagIcon className="size-5" />
+            <SidebarLabel>Orders</SidebarLabel>
+          </SidebarItem>
+        </SidebarSection>
+      </SidebarHeader>
+      <SidebarBody>
+        <SidebarSection>
+          <SidebarHeading>Settings</SidebarHeading>
+          <SidebarItem to="/settings" current={location.pathname === '/settings'}>
+            <Cog6ToothIcon className="size-5" />
+            <SidebarLabel>Settings</SidebarLabel>
+          </SidebarItem>
+        </SidebarSection>
+      </SidebarBody>
+    </Sidebar>
+  )
 }

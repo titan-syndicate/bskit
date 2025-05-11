@@ -3,6 +3,7 @@ import clsx from 'clsx'
 import React, { forwardRef } from 'react'
 import { TouchTarget } from './button'
 import { Link } from './link'
+import { Link as RouterLink } from 'react-router-dom'
 
 const colors = {
   red: 'bg-red-500/15 text-red-700 group-data-hover:bg-red-500/25 dark:bg-red-500/10 dark:text-red-400 dark:group-data-hover:bg-red-500/20',
@@ -35,6 +36,8 @@ const colors = {
 }
 
 type BadgeProps = { color?: keyof typeof colors }
+type ButtonProps = Omit<Headless.ButtonProps, 'as' | 'className'>
+type LinkProps = Omit<React.ComponentPropsWithoutRef<typeof RouterLink>, 'className'>
 
 export function Badge({ color = 'zinc', className, ...props }: BadgeProps & React.ComponentPropsWithoutRef<'span'>) {
   return (
@@ -49,16 +52,18 @@ export function Badge({ color = 'zinc', className, ...props }: BadgeProps & Reac
   )
 }
 
+type BaseBadgeProps = BadgeProps & {
+  className?: string
+  children: React.ReactNode
+}
+
 export const BadgeButton = forwardRef(function BadgeButton(
   {
     color = 'zinc',
     className,
     children,
     ...props
-  }: BadgeProps & { className?: string; children: React.ReactNode } & (
-      | Omit<Headless.ButtonProps, 'as' | 'className'>
-      | Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className'>
-    ),
+  }: BaseBadgeProps & ButtonProps,
   ref: React.ForwardedRef<HTMLElement>
 ) {
   let classes = clsx(
@@ -66,17 +71,35 @@ export const BadgeButton = forwardRef(function BadgeButton(
     'group relative inline-flex rounded-md focus:not-data-focus:outline-hidden data-focus:outline-2 data-focus:outline-offset-2 data-focus:outline-blue-500'
   )
 
-  return 'href' in props ? (
-    <Link {...props} className={classes} ref={ref as React.ForwardedRef<HTMLAnchorElement>}>
-      <TouchTarget>
-        <Badge color={color}>{children}</Badge>
-      </TouchTarget>
-    </Link>
-  ) : (
+  return (
     <Headless.Button {...props} className={classes} ref={ref}>
       <TouchTarget>
         <Badge color={color}>{children}</Badge>
       </TouchTarget>
     </Headless.Button>
+  )
+})
+
+export const BadgeLink = forwardRef(function BadgeLink(
+  {
+    color = 'zinc',
+    className,
+    children,
+    to,
+    ...props
+  }: BaseBadgeProps & LinkProps,
+  _ref: React.ForwardedRef<HTMLAnchorElement>
+) {
+  let classes = clsx(
+    className,
+    'group relative inline-flex rounded-md focus:not-data-focus:outline-hidden data-focus:outline-2 data-focus:outline-offset-2 data-focus:outline-blue-500'
+  )
+
+  return (
+    <Link to={to} {...props} className={classes}>
+      <TouchTarget>
+        <Badge color={color}>{children}</Badge>
+      </TouchTarget>
+    </Link>
   )
 })

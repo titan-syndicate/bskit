@@ -1,14 +1,14 @@
-import * as Headless from '@headlessui/react'
-import NextLink, { type LinkProps } from 'next/link'
-import React, { forwardRef } from 'react'
+import { Link as RouterLink } from 'react-router-dom'
 
-export const Link = forwardRef(function Link(
-  props: LinkProps & React.ComponentPropsWithoutRef<'a'>,
-  ref: React.ForwardedRef<HTMLAnchorElement>
-) {
+interface LinkProps extends React.ComponentPropsWithoutRef<typeof RouterLink> {
+  className?: string
+}
+
+export function Link({ className, ...props }: LinkProps) {
   return (
-    <Headless.DataInteractive>
-      <NextLink {...props} ref={ref} />
-    </Headless.DataInteractive>
+    <RouterLink
+      className={`text-sm/6 font-medium text-zinc-900 hover:text-zinc-700 dark:text-white dark:hover:text-zinc-300 ${className}`}
+      {...props}
+    />
   )
-})
+}
