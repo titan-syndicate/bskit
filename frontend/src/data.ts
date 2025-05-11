@@ -1,9 +1,95 @@
-export async function getOrder(id: string) {
-  return (await getOrders()).find((order) => order.id.toString() === id)!
+// Mock data types
+interface Order {
+  id: number
+  url: string
+  date: string
+  amount: {
+    usd: string
+    cad: string
+    fee: string
+    net: string
+  }
+  payment: {
+    transactionId: string
+    card: {
+      number: string
+      type: string
+      expiry: string
+    }
+  }
+  customer: {
+    name: string
+    email: string
+  }
+  event: {
+    name: string
+    thumbUrl: string
+  }
 }
 
-export async function getRecentOrders() {
-  return (await getOrders()).slice(0, 10)
+// Mock data
+const orders: Order[] = [
+  {
+    id: 1,
+    url: '/orders/1',
+    date: '2024-03-15',
+    amount: {
+      usd: '$455.00',
+      cad: '$615.00',
+      fee: '$15.00',
+      net: '$440.00',
+    },
+    payment: {
+      transactionId: 'txn_123',
+      card: {
+        number: '4242',
+        type: 'Visa',
+        expiry: '12/24',
+      },
+    },
+    customer: {
+      name: 'John Doe',
+      email: 'john@example.com',
+    },
+    event: {
+      name: 'Summer Concert',
+      thumbUrl: '/images/event-1.jpg',
+    },
+  },
+  // Add more mock orders as needed
+]
+
+// Data fetching functions
+export function getRecentOrders(): Order[] {
+  return orders
+}
+
+export function getEvent(id: string) {
+  // Mock event data
+  return {
+    id,
+    name: 'Summer Concert',
+    status: 'On Sale',
+    date: '2024-07-15',
+    time: '7:00 PM',
+    location: 'Central Park',
+    imgUrl: '/images/event-1.jpg',
+    totalRevenue: '$45,500',
+    totalRevenueChange: '+12.5%',
+    ticketsSold: '450',
+    ticketsAvailable: '1000',
+    ticketsSoldChange: '+5.2%',
+    pageViews: '12,345',
+    pageViewsChange: '+8.7%',
+  }
+}
+
+export function getEventOrders(eventId: string): Order[] {
+  return orders.filter(order => order.event.name === 'Summer Concert')
+}
+
+export async function getOrder(id: string) {
+  return (await getOrders()).find((order) => order.id.toString() === id)!
 }
 
 export async function getOrders() {
@@ -711,14 +797,6 @@ export async function getOrders() {
       event: await getEvent('1003'),
     },
   ]
-}
-
-export async function getEvent(id: string) {
-  return (await getEvents()).find((event) => event.id.toString() === id)!
-}
-
-export async function getEventOrders(id: string) {
-  return (await getOrders()).filter((order) => order.event.id.toString() === id)
 }
 
 export async function getEvents() {

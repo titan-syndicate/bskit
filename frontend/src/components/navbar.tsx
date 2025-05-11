@@ -6,23 +6,61 @@ import { LayoutGroup, motion } from 'framer-motion'
 import React, { forwardRef, useId } from 'react'
 import { TouchTarget } from './button'
 import { Link } from './link'
+import { Avatar } from './avatar'
+import { Dropdown, DropdownButton, DropdownDivider, DropdownItem, DropdownLabel, DropdownMenu } from './dropdown'
+import {
+  ArrowRightStartOnRectangleIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  Cog8ToothIcon,
+  LightBulbIcon,
+  ShieldCheckIcon,
+  UserCircleIcon,
+} from '@heroicons/react/16/solid'
 
-export function Navbar({ className, ...props }: React.ComponentPropsWithoutRef<'nav'>) {
-  return <nav {...props} className={clsx(className, 'flex flex-1 items-center gap-4 py-2.5')} />
+interface NavbarProps {
+  children: React.ReactNode
+}
+
+interface NavbarSectionProps {
+  children: React.ReactNode
+}
+
+function AccountDropdownMenu({ anchor }: { anchor: 'top start' | 'bottom end' }) {
+  return (
+    <DropdownMenu className="min-w-64" anchor={anchor}>
+      <DropdownItem to="#">
+        <UserCircleIcon />
+        <DropdownLabel>My account</DropdownLabel>
+      </DropdownItem>
+      <DropdownDivider />
+      <DropdownItem to="#">
+        <ShieldCheckIcon />
+        <DropdownLabel>Privacy policy</DropdownLabel>
+      </DropdownItem>
+      <DropdownItem to="#">
+        <LightBulbIcon />
+        <DropdownLabel>Share feedback</DropdownLabel>
+      </DropdownItem>
+      <DropdownDivider />
+      <DropdownItem to="/login">
+        <ArrowRightStartOnRectangleIcon />
+        <DropdownLabel>Sign out</DropdownLabel>
+      </DropdownItem>
+    </DropdownMenu>
+  )
+}
+
+export function Navbar({ children }: NavbarProps) {
+  return <nav className="flex h-16 items-center justify-between gap-4 border-b border-zinc-200 bg-white px-4 dark:border-zinc-800 dark:bg-zinc-900 sm:px-6 lg:px-8">{children}</nav>
+}
+
+export function NavbarSection({ children }: NavbarSectionProps) {
+  return <div className="flex items-center gap-4">{children}</div>
 }
 
 export function NavbarDivider({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
   return <div aria-hidden="true" {...props} className={clsx(className, 'h-6 w-px bg-zinc-950/10 dark:bg-white/10')} />
-}
-
-export function NavbarSection({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
-  let id = useId()
-
-  return (
-    <LayoutGroup id={id}>
-      <div {...props} className={clsx(className, 'flex items-center gap-3')} />
-    </LayoutGroup>
-  )
 }
 
 export function NavbarSpacer({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
@@ -68,12 +106,11 @@ export const NavbarItem = forwardRef(function NavbarItem(
           className="absolute inset-x-2 -bottom-2.5 h-0.5 rounded-full bg-zinc-950 dark:bg-white"
         />
       )}
-      {'href' in props ? (
+      {'to' in props ? (
         <Link
           {...props}
           className={classes}
           data-current={current ? 'true' : undefined}
-          ref={ref as React.ForwardedRef<HTMLAnchorElement>}
         >
           <TouchTarget>{children}</TouchTarget>
         </Link>
@@ -93,4 +130,21 @@ export const NavbarItem = forwardRef(function NavbarItem(
 
 export function NavbarLabel({ className, ...props }: React.ComponentPropsWithoutRef<'span'>) {
   return <span {...props} className={clsx(className, 'truncate')} />
+}
+
+export function UserNavbar({ children }: { children?: React.ReactNode }) {
+  return (
+    <Navbar>
+      {children}
+      <NavbarSpacer />
+      <NavbarSection>
+        <Dropdown>
+          <DropdownButton as={NavbarItem}>
+            <Avatar src="/users/erica.jpg" className="rounded-none" />
+          </DropdownButton>
+          <AccountDropdownMenu anchor="bottom end" />
+        </Dropdown>
+      </NavbarSection>
+    </Navbar>
+  )
 }
