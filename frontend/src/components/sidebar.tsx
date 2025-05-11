@@ -15,6 +15,8 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   PlusIcon,
+  QuestionMarkCircleIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/solid'
 import { Avatar } from './avatar'
 import { Dropdown, DropdownButton, DropdownDivider, DropdownItem, DropdownLabel, DropdownMenu } from './dropdown'
@@ -211,6 +213,17 @@ export function DefaultSidebar() {
           <SidebarItem to="/settings" current={location.pathname === '/settings'}>
             <Cog6ToothIcon className="size-5" />
             <SidebarLabel>Settings</SidebarLabel>
+          </SidebarItem>
+        </SidebarSection>
+        <SidebarSpacer />
+        <SidebarSection>
+          <SidebarItem to="/support">
+            <QuestionMarkCircleIcon className="size-5" />
+            <SidebarLabel>Support</SidebarLabel>
+          </SidebarItem>
+          <SidebarItem to="/changelog">
+            <SparklesIcon className="size-5" />
+            <SidebarLabel>Changelog</SidebarLabel>
           </SidebarItem>
         </SidebarSection>
       </SidebarBody>
