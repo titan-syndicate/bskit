@@ -98,10 +98,12 @@ export const SidebarItem = forwardRef(function SidebarItem(
   let classes = clsx(
     // Base
     'flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left text-base/6 font-medium text-zinc-950 sm:py-2 sm:text-sm/5',
+    // Grid layout
+    'grid grid-cols-[auto_1fr_auto] items-center',
     // Leading icon/icon-only
     '*:data-[slot=icon]:size-6 *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:fill-zinc-500 sm:*:data-[slot=icon]:size-5',
     // Trailing icon (down chevron or similar)
-    '*:last:data-[slot=icon]:ml-auto *:last:data-[slot=icon]:size-5 sm:*:last:data-[slot=icon]:size-4',
+    '*:last:data-[slot=icon]:size-3 sm:*:last:data-[slot=icon]:size-2',
     // Avatar
     '*:data-[slot=avatar]:-m-0.5 *:data-[slot=avatar]:size-7 sm:*:data-[slot=avatar]:size-6',
     // Hover
@@ -163,7 +165,7 @@ export function DefaultSidebar() {
           <DropdownButton as={SidebarItem}>
             <Avatar src="/teams/catalyst.svg" className="size-6" data-slot="avatar" />
             <SidebarLabel>Catalyst</SidebarLabel>
-            <ChevronDownIcon className="size-5" />
+            <ChevronDownIcon className="size-4" data-slot="icon" />
           </DropdownButton>
           <DropdownMenu className="min-w-80 lg:min-w-64" anchor="bottom start">
             <DropdownItem to="/settings">
