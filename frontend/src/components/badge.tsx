@@ -1,7 +1,7 @@
 import * as Headless from '@headlessui/react'
 import clsx from 'clsx'
 import React, { forwardRef } from 'react'
-import { Link } from './link'
+import { Link } from '@/components/link'
 
 const colors = {
   red: 'bg-red-500/15 text-red-700 group-data-hover:bg-red-500/25 dark:bg-red-500/10 dark:text-red-400 dark:group-data-hover:bg-red-500/20',
@@ -48,29 +48,34 @@ export function Badge({ color = 'zinc', className, ...props }: BadgeProps & Reac
   )
 }
 
-export const BadgeButton = forwardRef(function BadgeButton(
-  {
-    color = 'zinc',
-    className,
-    children,
-    ...props
-  }: BadgeProps & { className?: string; children: React.ReactNode } & (
-    | Omit<Headless.ButtonProps, 'as' | 'className'>
-    | Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className'>
-  ),
-  ref: React.ForwardedRef<HTMLElement>
+type BadgeButtonBaseProps = BadgeProps & {
+  className?: string
+  children: React.ReactNode
+}
+
+type BadgeButtonAsButton = BadgeButtonBaseProps & Omit<Headless.ButtonProps, 'as' | 'className'>
+type BadgeButtonAsLink = BadgeButtonBaseProps & Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className' | 'to'> & { to: string }
+
+export const BadgeButton = forwardRef<HTMLElement, BadgeButtonAsButton | BadgeButtonAsLink>(function BadgeButton(
+  { color = 'zinc', className, children, ...props },
+  ref
 ) {
   let classes = clsx(
     className,
     'group relative inline-flex rounded-md focus:not-data-focus:outline-hidden data-focus:outline-2 data-focus:outline-offset-2 data-focus:outline-blue-500'
   )
 
-  return 'href' in props ? (
-    <Link {...props} className={classes} ref={ref as React.ForwardedRef<HTMLAnchorElement>}>
-      <Badge color={color}>{children}</Badge>
-    </Link>
-  ) : (
-    <Headless.Button {...props} className={classes} ref={ref}>
+  if ('to' in props) {
+    const { to, ...linkProps } = props as BadgeButtonAsLink
+    return (
+      <Link to={to} {...linkProps} className={classes} ref={ref as React.ForwardedRef<HTMLAnchorElement>}>
+        <Badge color={color}>{children}</Badge>
+      </Link>
+    )
+  }
+
+  return (
+    <Headless.Button {...(props as BadgeButtonAsButton)} className={classes} ref={ref}>
       <Badge color={color}>{children}</Badge>
     </Headless.Button>
   )
