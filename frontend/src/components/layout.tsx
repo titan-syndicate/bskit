@@ -12,7 +12,7 @@ interface LayoutProps {
 
 export function Layout({ title = 'BSKit', description = 'Event management platform' }: LayoutProps) {
   return (
-    <>
+    <div className="text-zinc-950 antialiased dark:text-white">
       <Helmet>
         <title>{title}</title>
         <meta name="description" content={description} />
@@ -32,6 +32,6 @@ export function Layout({ title = 'BSKit', description = 'Event management platfo
       >
         <Outlet />
       </SidebarLayout>
-    </>
+    </div>
   )
 }

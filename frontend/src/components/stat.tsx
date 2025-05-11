@@ -1,23 +1,21 @@
+import { Badge } from './badge'
+import { Divider } from './divider'
+
 interface StatProps {
   title: string
   value: string
-  change?: string
+  change: string
 }
 
 export function Stat({ title, value, change }: StatProps) {
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{title}</div>
-      <div className="mt-2 flex items-baseline">
-        <div className="text-2xl font-semibold text-zinc-900 dark:text-white">{value}</div>
-        {change && (
-          <div
-            className={`ml-2 text-sm font-medium ${change.startsWith('+') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-              }`}
-          >
-            {change}
-          </div>
-        )}
+    <div>
+      <Divider />
+      <div className="mt-6 text-lg/6 font-medium sm:text-sm/6">{title}</div>
+      <div className="mt-3 text-3xl/8 font-semibold sm:text-2xl/8">{value}</div>
+      <div className="mt-3 text-sm/6 sm:text-xs/6">
+        <Badge color={change.startsWith('+') ? 'lime' : 'pink'}>{change}</Badge>{' '}
+        <span className="text-zinc-500">from last week</span>
       </div>
     </div>
   )
