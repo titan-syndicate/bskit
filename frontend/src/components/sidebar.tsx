@@ -91,7 +91,7 @@ export const SidebarItem = forwardRef(function SidebarItem(
     ...props
   }: { current?: boolean; className?: string; children: React.ReactNode } & (
     | Omit<Headless.ButtonProps, 'as' | 'className'>
-    | Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className'>
+    | Omit<Headless.ButtonProps<typeof Link>, 'as' | 'className'>
   ),
   ref: React.ForwardedRef<HTMLAnchorElement | HTMLButtonElement>
 ) {
@@ -126,22 +126,20 @@ export const SidebarItem = forwardRef(function SidebarItem(
         />
       )}
       {'to' in props ? (
-        <Link
+        <Headless.Button
+          as={Link}
           {...props}
           className={classes}
           data-current={current ? 'true' : undefined}
-          data-hover="true"
-          data-active="true"
+          ref={ref}
         >
           <TouchTarget>{children}</TouchTarget>
-        </Link>
+        </Headless.Button>
       ) : (
         <Headless.Button
           {...props}
           className={clsx('cursor-default', classes)}
           data-current={current ? 'true' : undefined}
-          data-hover="true"
-          data-active="true"
           ref={ref}
         >
           <TouchTarget>{children}</TouchTarget>
