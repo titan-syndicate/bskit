@@ -3,6 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+
+	"bskit/backend/terminal"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App struct
@@ -19,6 +23,20 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+}
+
+// StartTerminalLogs starts emitting terminal logs
+func (a *App) StartTerminalLogs() {
+	// Get the log channel from the terminal package
+	logChan := terminal.GenerateLogs()
+
+	// Start a goroutine to forward logs to the frontend
+	go func() {
+		for log := range logChan {
+			// Emit the log event
+			runtime.EventsEmit(a.ctx, "terminal:log", log)
+		}
+	}()
 }
 
 // Greet returns a greeting for the given name

@@ -84,7 +84,7 @@ export function getEvent(id: string) {
   }
 }
 
-export function getEventOrders(eventId: string): Order[] {
+export function getEventOrders(): Order[] {
   return orders.filter(order => order.event.name === 'Summer Concert')
 }
 

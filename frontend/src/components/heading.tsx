@@ -1,5 +1,3 @@
-import clsx from 'clsx'
-
 interface HeadingProps {
   children: React.ReactNode
   className?: string

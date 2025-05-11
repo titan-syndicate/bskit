@@ -7,17 +7,8 @@ import React, { forwardRef, useId } from 'react'
 import { TouchTarget } from './button'
 import { Link } from './link'
 import { Avatar } from './avatar'
-import { Dropdown, DropdownButton, DropdownDivider, DropdownItem, DropdownLabel, DropdownMenu } from './dropdown'
+import { Dropdown, DropdownButton } from './dropdown'
 import { AccountDropdownMenu } from './account-dropdown-menu'
-import {
-  ArrowRightStartOnRectangleIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-  Cog8ToothIcon,
-  LightBulbIcon,
-  ShieldCheckIcon,
-  UserCircleIcon,
-} from '@heroicons/react/16/solid'
 
 interface NavbarProps {
   children: React.ReactNode

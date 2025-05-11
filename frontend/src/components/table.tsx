@@ -1,16 +1,14 @@
 'use client'
 
-import clsx from 'clsx'
 import type React from 'react'
-import { createContext, useContext, useState, forwardRef } from 'react'
 import { Link } from './link'
 
-const TableContext = createContext<{ bleed: boolean; dense: boolean; grid: boolean; striped: boolean }>({
-  bleed: false,
-  dense: false,
-  grid: false,
-  striped: false,
-})
+// const TableContext = createContext<{ bleed: boolean; dense: boolean; grid: boolean; striped: boolean }>({
+//   bleed: false,
+//   dense: false,
+//   grid: false,
+//   striped: false,
+// })
 
 interface TableProps extends React.TableHTMLAttributes<HTMLTableElement> {
   className?: string

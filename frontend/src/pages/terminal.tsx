@@ -4,7 +4,8 @@ import { FitAddon } from 'xterm-addon-fit'
 import { WebLinksAddon } from 'xterm-addon-web-links'
 import { Heading } from '../components/heading'
 import { Divider } from '../components/divider'
-import { runtime } from '../wailsjs/runtime/runtime'
+import { EventsOn } from 'wailsjs/runtime/runtime'
+import { StartTerminalLogs } from 'wailsjs/go/main/App'
 import 'xterm/css/xterm.css'
 
 // Custom scrollbar styles
@@ -74,10 +75,10 @@ export default function TerminalPage() {
     terminalInstance.current = term
 
     // Start receiving logs from backend
-    runtime.StartTerminalLogs()
+    StartTerminalLogs()
 
     // Set up event listener for logs
-    const unsubscribe = runtime.EventsOn("terminal:log", (log: TerminalLog) => {
+    const unsubscribe = EventsOn("terminal:log", (log: TerminalLog) => {
       term.writeln(log.content)
     })
 

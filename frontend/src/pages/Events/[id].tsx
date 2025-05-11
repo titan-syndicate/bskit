@@ -14,7 +14,7 @@ export default function EventDetails() {
     return <Navigate to="/events" replace />
   }
 
-  const orders = getEventOrders(id)
+  const orders = getEventOrders()
 
   return (
     <>
