@@ -208,20 +208,17 @@ export function DefaultSidebar() {
             <SidebarLabel>Orders</SidebarLabel>
           </SidebarItem>
         </SidebarSection>
-        <SidebarSection>
-          <SidebarHeading>Settings</SidebarHeading>
-          <SidebarItem to="/settings" current={location.pathname === '/settings'}>
-            <Cog6ToothIcon className="size-5" />
-            <SidebarLabel>Settings</SidebarLabel>
-          </SidebarItem>
-        </SidebarSection>
+        <SidebarItem to="/settings" current={location.pathname === '/settings'}>
+          <Cog6ToothIcon className="size-5" />
+          <SidebarLabel>Settings</SidebarLabel>
+        </SidebarItem>
         <SidebarSpacer />
         <SidebarSection>
-          <SidebarItem to="/support">
+          <SidebarItem to="#">
             <QuestionMarkCircleIcon className="size-5" />
             <SidebarLabel>Support</SidebarLabel>
           </SidebarItem>
-          <SidebarItem to="/changelog">
+          <SidebarItem to="#">
             <SparklesIcon className="size-5" />
             <SidebarLabel>Changelog</SidebarLabel>
           </SidebarItem>

@@ -28,7 +28,7 @@ export default function Events() {
           <div className="mt-4 flex max-w-xl gap-4">
             <div className="flex-1">
               <InputGroup>
-                <MagnifyingGlassIcon />
+                <MagnifyingGlassIcon data-slot="icon" />
                 <Input name="search" placeholder="Search events…" />
               </InputGroup>
             </div>

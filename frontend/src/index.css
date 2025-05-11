@@ -1,13 +1,20 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: Inter, sans-serif;
+  --font-sans--font-feature-settings: 'cv11';
+  --spacing: 0.25rem;
+  --radius-lg: 0.5rem;
+}
 
 @layer base {
   :root {
     --color-white: #ffffff;
-    --spacing: 0.25rem;
   }
 }
+
+@tailwind components;
+@tailwind utilities;
 
 @layer utilities {
   [data-hover] {
