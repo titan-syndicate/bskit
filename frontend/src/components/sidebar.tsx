@@ -159,7 +159,7 @@ export function DefaultSidebar() {
       <SidebarHeader>
         <Dropdown>
           <DropdownButton as={SidebarItem}>
-            <Avatar src="/teams/catalyst.svg" />
+            <Avatar src="/teams/catalyst.svg" className="size-6" data-slot="avatar" />
             <SidebarLabel>Catalyst</SidebarLabel>
             <ChevronDownIcon className="size-5" />
           </DropdownButton>
@@ -170,11 +170,11 @@ export function DefaultSidebar() {
             </DropdownItem>
             <DropdownDivider />
             <DropdownItem to="#">
-              <Avatar src="/teams/catalyst.svg" />
+              <Avatar src="/teams/catalyst.svg" className="size-6" data-slot="avatar" />
               <DropdownLabel>Catalyst</DropdownLabel>
             </DropdownItem>
             <DropdownItem to="#">
-              <Avatar initials="BE" className="bg-purple-500 text-white" />
+              <Avatar initials="BE" className="size-6 bg-purple-500 text-white" data-slot="avatar" />
               <DropdownLabel>Big Events</DropdownLabel>
             </DropdownItem>
             <DropdownDivider />
