@@ -8,6 +8,7 @@ import { TouchTarget } from './button'
 import { Link } from './link'
 import { Avatar } from './avatar'
 import { Dropdown, DropdownButton, DropdownDivider, DropdownItem, DropdownLabel, DropdownMenu } from './dropdown'
+import { AccountDropdownMenu } from './account-dropdown-menu'
 import {
   ArrowRightStartOnRectangleIcon,
   ChevronDownIcon,
@@ -24,31 +25,6 @@ interface NavbarProps {
 
 interface NavbarSectionProps {
   children: React.ReactNode
-}
-
-function AccountDropdownMenu({ anchor }: { anchor: 'top start' | 'bottom end' }) {
-  return (
-    <DropdownMenu className="min-w-64" anchor={anchor}>
-      <DropdownItem to="#">
-        <UserCircleIcon />
-        <DropdownLabel>My account</DropdownLabel>
-      </DropdownItem>
-      <DropdownDivider />
-      <DropdownItem to="#">
-        <ShieldCheckIcon />
-        <DropdownLabel>Privacy policy</DropdownLabel>
-      </DropdownItem>
-      <DropdownItem to="#">
-        <LightBulbIcon />
-        <DropdownLabel>Share feedback</DropdownLabel>
-      </DropdownItem>
-      <DropdownDivider />
-      <DropdownItem to="/login">
-        <ArrowRightStartOnRectangleIcon />
-        <DropdownLabel>Sign out</DropdownLabel>
-      </DropdownItem>
-    </DropdownMenu>
-  )
 }
 
 export function Navbar({ children }: NavbarProps) {

@@ -13,10 +13,12 @@ import {
   ShoppingBagIcon,
   Cog6ToothIcon,
   ChevronDownIcon,
+  ChevronUpIcon,
   PlusIcon,
 } from '@heroicons/react/24/solid'
 import { Avatar } from './avatar'
 import { Dropdown, DropdownButton, DropdownDivider, DropdownItem, DropdownLabel, DropdownMenu } from './dropdown'
+import { AccountDropdownMenu } from './account-dropdown-menu'
 
 export function Sidebar({ className, ...props }: React.ComponentPropsWithoutRef<'nav'>) {
   // return <nav {...props} className={clsx(className, 'flex h-full min-h-0 flex-col bg-white dark:bg-zinc-900')} />
@@ -212,6 +214,23 @@ export function DefaultSidebar() {
           </SidebarItem>
         </SidebarSection>
       </SidebarBody>
+      <SidebarFooter className="max-lg:hidden">
+        <Dropdown>
+          <DropdownButton as={SidebarItem}>
+            <span className="flex min-w-0 items-center gap-3">
+              <Avatar src="/users/erica.jpg" className="size-10" square alt="" />
+              <span className="min-w-0">
+                <span className="block truncate text-sm/5 font-medium text-zinc-950 dark:text-white">Erica</span>
+                <span className="block truncate text-xs/5 font-normal text-zinc-500 dark:text-zinc-400">
+                  erica@example.com
+                </span>
+              </span>
+            </span>
+            <ChevronUpIcon className="size-4" data-slot="icon" />
+          </DropdownButton>
+          <AccountDropdownMenu anchor="top start" />
+        </Dropdown>
+      </SidebarFooter>
     </Sidebar>
   )
 }
