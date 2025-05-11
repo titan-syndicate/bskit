@@ -6,9 +6,16 @@ import { LayoutGroup, motion } from 'framer-motion'
 import React, { forwardRef, useId } from 'react'
 import { TouchTarget } from './button'
 import { Link } from './link'
+import { useLocation } from 'react-router-dom'
+import {
+  HomeIcon,
+  CalendarIcon,
+  ShoppingBagIcon,
+  Cog6ToothIcon,
+} from '@heroicons/react/24/outline'
 
 export function Sidebar({ className, ...props }: React.ComponentPropsWithoutRef<'nav'>) {
-  return <nav {...props} className={clsx(className, 'flex h-full min-h-0 flex-col')} />
+  return <nav {...props} className={clsx(className, 'flex h-full min-h-0 flex-col bg-white dark:bg-zinc-900')} />
 }
 
 export function SidebarHeader({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
@@ -137,4 +144,38 @@ export const SidebarItem = forwardRef(function SidebarItem(
 
 export function SidebarLabel({ className, ...props }: React.ComponentPropsWithoutRef<'span'>) {
   return <span {...props} className={clsx(className, 'truncate')} />
+}
+
+export function DefaultSidebar() {
+  const location = useLocation()
+
+  return (
+    <Sidebar className="hidden lg:flex">
+      <SidebarHeader>
+        <SidebarSection>
+          <SidebarItem to="/" current={location.pathname === '/'}>
+            <HomeIcon />
+            <SidebarLabel>Home</SidebarLabel>
+          </SidebarItem>
+          <SidebarItem to="/events" current={location.pathname.startsWith('/events')}>
+            <CalendarIcon />
+            <SidebarLabel>Events</SidebarLabel>
+          </SidebarItem>
+          <SidebarItem to="/orders" current={location.pathname.startsWith('/orders')}>
+            <ShoppingBagIcon />
+            <SidebarLabel>Orders</SidebarLabel>
+          </SidebarItem>
+        </SidebarSection>
+      </SidebarHeader>
+      <SidebarBody>
+        <SidebarSection>
+          <SidebarHeading>Settings</SidebarHeading>
+          <SidebarItem to="/settings" current={location.pathname === '/settings'}>
+            <Cog6ToothIcon />
+            <SidebarLabel>Settings</SidebarLabel>
+          </SidebarItem>
+        </SidebarSection>
+      </SidebarBody>
+    </Sidebar>
+  )
 }
