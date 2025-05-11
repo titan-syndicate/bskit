@@ -5,11 +5,30 @@
 @layer base {
   :root {
     --color-white: #ffffff;
+    --spacing: 0.25rem;
   }
 }
 
 @layer utilities {
   [data-hover] {
     @apply transition-colors;
+  }
+
+  /* Avatar size utilities */
+  [data-slot="avatar"]:is(.*\:data-\[slot\=avatar\]\:size-6 > *) {
+    width: calc(var(--spacing) * 6);
+    height: calc(var(--spacing) * 6);
+  }
+
+  [data-slot="avatar"]:is(.*\:data-\[slot\=avatar\]\:size-7 > *) {
+    width: calc(var(--spacing) * 7);
+    height: calc(var(--spacing) * 7);
+  }
+
+  @media (min-width: 40rem) {
+    [data-slot="avatar"]:is(.sm\:\*\:data-\[slot\=avatar\]\:size-6 > *) {
+      width: calc(var(--spacing) * 6);
+      height: calc(var(--spacing) * 6);
+    }
   }
 }

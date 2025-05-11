@@ -10,6 +10,18 @@ export default {
       backgroundColor: {
         'white/5': 'color-mix(in oklab, var(--color-white) 5%, transparent)',
       },
+      spacing: {
+        '1': 'calc(var(--spacing) * 1)',
+        '2': 'calc(var(--spacing) * 2)',
+        '3': 'calc(var(--spacing) * 3)',
+        '4': 'calc(var(--spacing) * 4)',
+        '5': 'calc(var(--spacing) * 5)',
+        '6': 'calc(var(--spacing) * 6)',
+        '7': 'calc(var(--spacing) * 7)',
+        '8': 'calc(var(--spacing) * 8)',
+        '9': 'calc(var(--spacing) * 9)',
+        '10': 'calc(var(--spacing) * 10)',
+      },
     },
   },
   plugins: [
