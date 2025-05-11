@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import type React from 'react'
-import { Button } from './button'
+import { Button, ButtonLink } from './button'
 
 export function Pagination({
   'aria-label': ariaLabel = 'Page navigation',
@@ -65,8 +65,8 @@ export function PaginationPage({
   children,
 }: React.PropsWithChildren<{ href: string; className?: string; current?: boolean }>) {
   return (
-    <Button
-      href={href}
+    <ButtonLink
+      to={href}
       plain
       aria-label={`Page ${children}`}
       aria-current={current ? 'page' : undefined}
@@ -77,7 +77,7 @@ export function PaginationPage({
       )}
     >
       <span className="-mx-0.5">{children}</span>
-    </Button>
+    </ButtonLink>
   )
 }
 
