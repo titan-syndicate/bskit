@@ -171,7 +171,7 @@ export default function BuildPage() {
       <div className="mt-4">
         <Divider />
       </div>
-      <div className="mt-6 flex-1 w-full rounded-lg bg-zinc-950 p-4 min-h-0">
+      <div className="mt-6 flex-1 w-full rounded-lg bg-zinc-950 p-4 min-h-0 h-full">
         <div ref={terminalRef} className="h-full w-full" />
       </div>
     </div>
