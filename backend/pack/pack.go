@@ -127,14 +127,23 @@ func (p *PackBuilder) Build(sourcePath string) error {
 		if err != nil {
 			return fmt.Errorf("error waiting for container: %v", err)
 		}
-	case <-statusCh:
+	case status := <-statusCh:
 		// Container completed successfully
+		if status.StatusCode != 0 {
+			return fmt.Errorf("build failed with exit code %d", status.StatusCode)
+		}
 	}
 
 	// Remove the container
 	if err := p.dockerClient.ContainerRemove(p.ctx, resp.ID, container.RemoveOptions{}); err != nil {
 		log.Printf("Warning: Failed to remove container: %v", err)
 	}
+
+	// Add completion message
+	runtime.EventsEmit(p.ctx, "build:log", "\n\x1b[1;32m✓ Build completed successfully!\x1b[0m")
+	runtime.EventsEmit(p.ctx, "build:log", "\nTo run the application, use:")
+	runtime.EventsEmit(p.ctx, "build:log", "\n\x1b[1;34m$ docker run -p 3000:3000 test-app\x1b[0m")
+	runtime.EventsEmit(p.ctx, "build:log", "\nThe application will be available at http://localhost:3000")
 
 	return nil
 }
