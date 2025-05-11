@@ -116,7 +116,7 @@ export function UserNavbar({ children }: { children?: React.ReactNode }) {
       <NavbarSection>
         <Dropdown>
           <DropdownButton as={NavbarItem}>
-            <Avatar src="/users/erica.jpg" className="rounded-none" />
+            <Avatar src="/users/erica.jpg" square data-slot="avatar" />
           </DropdownButton>
           <AccountDropdownMenu anchor="bottom end" />
         </Dropdown>

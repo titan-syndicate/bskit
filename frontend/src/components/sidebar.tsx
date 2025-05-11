@@ -161,7 +161,7 @@ export function DefaultSidebar() {
   const location = useLocation()
 
   return (
-    <Sidebar className="hidden lg:flex">
+    <Sidebar>
       <SidebarHeader>
         <Dropdown>
           <DropdownButton as={SidebarItem}>
