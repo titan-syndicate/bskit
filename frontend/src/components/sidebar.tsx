@@ -130,6 +130,8 @@ export const SidebarItem = forwardRef(function SidebarItem(
           {...props}
           className={classes}
           data-current={current ? 'true' : undefined}
+          data-hover="true"
+          data-active="true"
         >
           <TouchTarget>{children}</TouchTarget>
         </Link>
@@ -138,6 +140,8 @@ export const SidebarItem = forwardRef(function SidebarItem(
           {...props}
           className={clsx('cursor-default', classes)}
           data-current={current ? 'true' : undefined}
+          data-hover="true"
+          data-active="true"
           ref={ref}
         >
           <TouchTarget>{children}</TouchTarget>
