@@ -9,7 +9,7 @@ import EventDetails from './pages/Events/[id]'
 import Orders from './pages/Orders'
 import OrderDetails from './pages/Orders/[id]'
 import Settings from './pages/Settings'
-import TerminalPage from './pages/terminal'
+import TerminalPage from './pages/build'
 
 export default function App() {
   return (

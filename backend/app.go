@@ -43,8 +43,8 @@ func (a *App) Startup(ctx context.Context) {
 	}
 
 	// Set up event listener for when frontend connects
-	runtime.EventsOn(a.eventCtx, "terminal:ready", func(data ...interface{}) {
-		fmt.Printf("Received terminal:ready event\n")
+	runtime.EventsOn(a.eventCtx, "build:ready", func(data ...interface{}) {
+		fmt.Printf("Received build:ready event\n")
 		select {
 		case <-a.readyChan:
 			// Channel already closed, do nothing
@@ -61,12 +61,12 @@ func (a *App) StartBuild() {
 	// Get the absolute path to the test-app directory
 	absPath, err := filepath.Abs("test-app")
 	if err != nil {
-		runtime.EventsEmit(a.ctx, "terminal:log", fmt.Sprintf("Error: failed to get absolute path: %v", err))
+		runtime.EventsEmit(a.ctx, "build:log", fmt.Sprintf("Error: failed to get absolute path: %v", err))
 		return
 	}
 
 	// Start the build process
 	if err := a.packBuilder.Build(absPath); err != nil {
-		runtime.EventsEmit(a.ctx, "terminal:log", fmt.Sprintf("Error: build failed: %v", err))
+		runtime.EventsEmit(a.ctx, "build:log", fmt.Sprintf("Error: build failed: %v", err))
 	}
 }

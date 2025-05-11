@@ -51,7 +51,7 @@ func (p *PackBuilder) Build(sourcePath string) error {
 	imageName := "buildpacksio/pack:latest"
 	_, _, err = p.dockerClient.ImageInspectWithRaw(p.ctx, imageName)
 	if err != nil {
-		runtime.EventsEmit(p.ctx, "terminal:log", "Pulling pack CLI image...")
+		runtime.EventsEmit(p.ctx, "build:log", "Pulling pack CLI image...")
 		out, err := p.dockerClient.ImagePull(p.ctx, imageName, image.PullOptions{})
 		if err != nil {
 			return fmt.Errorf("failed to pull image: %v", err)
@@ -117,7 +117,7 @@ func (p *PackBuilder) Build(sourcePath string) error {
 			logs,
 		)
 		if err != nil {
-			runtime.EventsEmit(p.ctx, "terminal:log", fmt.Sprintf("Error reading logs: %v", err))
+			runtime.EventsEmit(p.ctx, "build:log", fmt.Sprintf("Error reading logs: %v", err))
 		}
 	}()
 
@@ -170,7 +170,7 @@ func (w *logWriter) Write(p []byte) (n int, err error) {
 		}
 
 		// Emit the log line to the frontend
-		runtime.EventsEmit(w.ctx, "terminal:log", string(line))
+		runtime.EventsEmit(w.ctx, "build:log", string(line))
 	}
 
 	return len(p), nil

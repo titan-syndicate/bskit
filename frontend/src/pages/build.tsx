@@ -35,7 +35,7 @@ const scrollbarStyles = `
   }
 `
 
-export default function TerminalPage() {
+export default function BuildPage() {
   const terminalRef = useRef<HTMLDivElement>(null)
   const terminalInstance = useRef<Terminal | null>(null)
   const fitAddonRef = useRef<FitAddon | null>(null)
@@ -105,12 +105,12 @@ export default function TerminalPage() {
     fitAddon.fit()
 
     // Set up event listener for logs
-    const unsubscribe = EventsOn("terminal:log", (log: string) => {
+    const unsubscribe = EventsOn("build:log", (log: string) => {
       term.writeln(log)
     })
 
     // Notify backend that we're ready
-    EventsEmit("terminal:ready")
+    EventsEmit("build:ready")
 
     // Handle window resize
     const handleResize = () => {
@@ -155,7 +155,7 @@ export default function TerminalPage() {
   }
 
   return (
-    <>
+    <div className="flex flex-col h-full">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="max-sm:w-full sm:flex-1">
           <Heading>Build</Heading>
@@ -171,9 +171,9 @@ export default function TerminalPage() {
       <div className="mt-4">
         <Divider />
       </div>
-      <div className="mt-6 h-[calc(100vh-12rem)] w-full rounded-lg bg-zinc-950 p-4">
+      <div className="mt-6 flex-1 w-full rounded-lg bg-zinc-950 p-4 min-h-0">
         <div ref={terminalRef} className="h-full w-full" />
       </div>
-    </>
+    </div>
   )
 }
