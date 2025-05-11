@@ -1,6 +1,7 @@
 package pack
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"log"
@@ -109,11 +110,14 @@ func (p *PackBuilder) Build(sourcePath string) error {
 
 	// Stream logs in a goroutine
 	go func() {
-		// Stream logs to both stdout/stderr and emit them to the frontend
-		_, err := stdcopy.StdCopy(os.Stdout, os.Stderr, logs)
+		// Use stdcopy to properly handle Docker log format
+		_, err = stdcopy.StdCopy(
+			&logWriter{ctx: p.ctx, prefix: ""},
+			&logWriter{ctx: p.ctx, prefix: ""},
+			logs,
+		)
 		if err != nil {
 			runtime.EventsEmit(p.ctx, "terminal:log", fmt.Sprintf("Error reading logs: %v", err))
-			return
 		}
 	}()
 
@@ -133,4 +137,41 @@ func (p *PackBuilder) Build(sourcePath string) error {
 	}
 
 	return nil
+}
+
+// logWriter implements io.Writer to handle Docker log output
+type logWriter struct {
+	ctx    context.Context
+	prefix string
+	buffer []byte
+}
+
+func (w *logWriter) Write(p []byte) (n int, err error) {
+	// Append to buffer
+	w.buffer = append(w.buffer, p...)
+
+	// Process complete lines
+	for {
+		// Find the next newline
+		i := bytes.IndexByte(w.buffer, '\n')
+		if i == -1 {
+			// No complete line found, keep the data in buffer
+			break
+		}
+
+		// Extract the line (excluding the newline)
+		line := w.buffer[:i]
+		// Remove the processed line and newline from buffer
+		w.buffer = w.buffer[i+1:]
+
+		// Skip empty lines
+		if len(line) == 0 {
+			continue
+		}
+
+		// Emit the log line to the frontend
+		runtime.EventsEmit(w.ctx, "terminal:log", string(line))
+	}
+
+	return len(p), nil
 }

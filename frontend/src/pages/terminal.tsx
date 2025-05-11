@@ -38,6 +38,7 @@ const scrollbarStyles = `
 export default function TerminalPage() {
   const terminalRef = useRef<HTMLDivElement>(null)
   const terminalInstance = useRef<Terminal | null>(null)
+  const fitAddonRef = useRef<FitAddon | null>(null)
   const [isBuilding, setIsBuilding] = useState(false)
 
   useEffect(() => {
@@ -74,8 +75,20 @@ export default function TerminalPage() {
         brightCyan: '#22d3ee',    // cyan-400
         brightWhite: '#f1f5f9',   // slate-100
       },
-      // Enable true color support
+      // Terminal configuration
+      scrollback: 10000,
+      convertEol: true,
+      disableStdin: true,
+      allowProposedApi: true,
+      cols: 200, // Increased width to prevent wrapping
+      // Enable proper handling of control characters
       allowTransparency: true,
+      cursorStyle: 'block',
+      drawBoldTextInBrightColors: true,
+      // Enable proper handling of ANSI escape sequences
+      windowsMode: false,
+      // Disable line wrapping to prevent formatting issues
+      scrollOnUserInput: false,
     })
 
     // Add addons
@@ -83,12 +96,13 @@ export default function TerminalPage() {
     term.loadAddon(fitAddon)
     term.loadAddon(new WebLinksAddon())
 
+    // Store references
+    terminalInstance.current = term
+    fitAddonRef.current = fitAddon
+
     // Open terminal
     term.open(terminalRef.current)
     fitAddon.fit()
-
-    // Store terminal instance
-    terminalInstance.current = term
 
     // Set up event listener for logs
     const unsubscribe = EventsOn("terminal:log", (log: string) => {
@@ -98,11 +112,25 @@ export default function TerminalPage() {
     // Notify backend that we're ready
     EventsEmit("terminal:ready")
 
+    // Handle window resize
+    const handleResize = () => {
+      if (fitAddonRef.current) {
+        fitAddonRef.current.fit()
+      }
+    }
+
+    // Add resize observer to handle container size changes
+    const resizeObserver = new ResizeObserver(handleResize)
+    if (terminalRef.current) {
+      resizeObserver.observe(terminalRef.current)
+    }
+
     // Cleanup
     return () => {
       unsubscribe()
       term.dispose()
       document.head.removeChild(styleSheet)
+      resizeObserver.disconnect()
     }
   }, [])
 
