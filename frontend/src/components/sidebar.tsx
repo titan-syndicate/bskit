@@ -12,10 +12,11 @@ import {
   CalendarIcon,
   ShoppingBagIcon,
   Cog6ToothIcon,
-} from '@heroicons/react/24/outline'
+} from '@heroicons/react/24/solid'
 
 export function Sidebar({ className, ...props }: React.ComponentPropsWithoutRef<'nav'>) {
-  return <nav {...props} className={clsx(className, 'flex h-full min-h-0 flex-col bg-white dark:bg-zinc-900')} />
+  // return <nav {...props} className={clsx(className, 'flex h-full min-h-0 flex-col bg-white dark:bg-zinc-900')} />
+  return <nav {...props} className={clsx(className, 'flex h-full min-h-0 flex-col ')} />
 }
 
 export function SidebarHeader({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
@@ -154,15 +155,15 @@ export function DefaultSidebar() {
       <SidebarHeader>
         <SidebarSection>
           <SidebarItem to="/" current={location.pathname === '/'}>
-            <HomeIcon />
+            <HomeIcon className="size-5" />
             <SidebarLabel>Home</SidebarLabel>
           </SidebarItem>
           <SidebarItem to="/events" current={location.pathname.startsWith('/events')}>
-            <CalendarIcon />
+            <CalendarIcon className="size-5" />
             <SidebarLabel>Events</SidebarLabel>
           </SidebarItem>
           <SidebarItem to="/orders" current={location.pathname.startsWith('/orders')}>
-            <ShoppingBagIcon />
+            <ShoppingBagIcon className="size-5" />
             <SidebarLabel>Orders</SidebarLabel>
           </SidebarItem>
         </SidebarSection>
@@ -171,7 +172,7 @@ export function DefaultSidebar() {
         <SidebarSection>
           <SidebarHeading>Settings</SidebarHeading>
           <SidebarItem to="/settings" current={location.pathname === '/settings'}>
-            <Cog6ToothIcon />
+            <Cog6ToothIcon className="size-5" />
             <SidebarLabel>Settings</SidebarLabel>
           </SidebarItem>
         </SidebarSection>
