@@ -132,9 +132,10 @@ export function NavbarLabel({ className, ...props }: React.ComponentPropsWithout
   return <span {...props} className={clsx(className, 'truncate')} />
 }
 
-export function UserNavbar() {
+export function UserNavbar({ children }: { children?: React.ReactNode }) {
   return (
     <Navbar>
+      {children}
       <NavbarSpacer />
       <NavbarSection>
         <Dropdown>
