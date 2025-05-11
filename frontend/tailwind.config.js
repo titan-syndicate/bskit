@@ -1,3 +1,5 @@
+const plugin = require('tailwindcss/plugin')
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -29,6 +31,13 @@ export default {
       addVariant('data-hover', '&[data-hover]');
       addVariant('data-active', '&[data-active]');
       addVariant('data-current', '&[data-current]');
-    }
+    },
+    plugin(function ({ addUtilities }) {
+      addUtilities({
+        '.spacing': {
+          '--spacing': '0.25rem',
+        },
+      })
+    }),
   ],
 }
