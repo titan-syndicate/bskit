@@ -12,7 +12,11 @@ import {
   CalendarIcon,
   ShoppingBagIcon,
   Cog6ToothIcon,
+  ChevronDownIcon,
+  PlusIcon,
 } from '@heroicons/react/24/solid'
+import { Avatar } from './avatar'
+import { Dropdown, DropdownButton, DropdownDivider, DropdownItem, DropdownLabel, DropdownMenu } from './dropdown'
 
 export function Sidebar({ className, ...props }: React.ComponentPropsWithoutRef<'nav'>) {
   // return <nav {...props} className={clsx(className, 'flex h-full min-h-0 flex-col bg-white dark:bg-zinc-900')} />
@@ -153,6 +157,35 @@ export function DefaultSidebar() {
   return (
     <Sidebar className="hidden lg:flex">
       <SidebarHeader>
+        <Dropdown>
+          <DropdownButton as={SidebarItem}>
+            <Avatar src="/teams/catalyst.svg" />
+            <SidebarLabel>Catalyst</SidebarLabel>
+            <ChevronDownIcon className="size-5" />
+          </DropdownButton>
+          <DropdownMenu className="min-w-80 lg:min-w-64" anchor="bottom start">
+            <DropdownItem to="/settings">
+              <Cog6ToothIcon className="size-5" />
+              <DropdownLabel>Settings</DropdownLabel>
+            </DropdownItem>
+            <DropdownDivider />
+            <DropdownItem to="#">
+              <Avatar src="/teams/catalyst.svg" />
+              <DropdownLabel>Catalyst</DropdownLabel>
+            </DropdownItem>
+            <DropdownItem to="#">
+              <Avatar initials="BE" className="bg-purple-500 text-white" />
+              <DropdownLabel>Big Events</DropdownLabel>
+            </DropdownItem>
+            <DropdownDivider />
+            <DropdownItem to="#">
+              <PlusIcon className="size-5" />
+              <DropdownLabel>New team&hellip;</DropdownLabel>
+            </DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
+      </SidebarHeader>
+      <SidebarBody>
         <SidebarSection>
           <SidebarItem to="/" current={location.pathname === '/'}>
             <HomeIcon className="size-5" />
@@ -167,8 +200,6 @@ export function DefaultSidebar() {
             <SidebarLabel>Orders</SidebarLabel>
           </SidebarItem>
         </SidebarSection>
-      </SidebarHeader>
-      <SidebarBody>
         <SidebarSection>
           <SidebarHeading>Settings</SidebarHeading>
           <SidebarItem to="/settings" current={location.pathname === '/settings'}>
