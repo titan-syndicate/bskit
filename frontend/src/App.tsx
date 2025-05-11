@@ -9,6 +9,7 @@ import EventDetails from './pages/Events/[id]'
 import Orders from './pages/Orders'
 import OrderDetails from './pages/Orders/[id]'
 import Settings from './pages/Settings'
+import TerminalPage from './pages/build'
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/orders" element={<Orders />} />
           <Route path="/orders/:id" element={<OrderDetails />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/build" element={<TerminalPage />} />
         </Route>
       </Routes>
     </HelmetProvider>

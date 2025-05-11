@@ -2,4 +2,4 @@ build/bin
 node_modules
 frontend/dist
 demo/
-**/*.tsbuildinfo
+frontend/tsconfig.tsbuildinfo

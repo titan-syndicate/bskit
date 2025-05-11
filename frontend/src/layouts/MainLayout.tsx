@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom'
 import { DefaultSidebar } from '@/components/sidebar'
-import { UserNavbar, Navbar, NavbarSpacer, NavbarSection, NavbarItem } from '@/components/navbar'
+import { Navbar, NavbarSpacer, NavbarSection, NavbarItem } from '@/components/navbar'
 import { SidebarLayout } from '@/components/sidebar-layout'
 import { Dropdown, DropdownButton } from '@/components/dropdown'
 import { Avatar } from '@/components/avatar'
