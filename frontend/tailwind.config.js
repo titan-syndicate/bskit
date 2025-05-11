@@ -5,7 +5,17 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      backgroundColor: {
+        'white/5': 'color-mix(in oklab, var(--color-white) 5%, transparent)',
+      },
+    },
   },
-  plugins: [],
+  plugins: [
+    function ({ addVariant }) {
+      addVariant('data-hover', '&[data-hover]');
+      addVariant('data-active', '&[data-active]');
+      addVariant('data-current', '&[data-current]');
+    }
+  ],
 }
