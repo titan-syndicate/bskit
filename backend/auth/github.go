@@ -52,7 +52,11 @@ func (a *Auth) StartDeviceAuth() (*UserCodeInfo, error) {
 			Scope: token.Scope,
 		}
 
-		runtime.EventsEmit(a.ctx, "github:auth:success", accessToken)
+		// Store the token in memory
+		a.accessToken = accessToken
+
+		// Emit success event without the token
+		runtime.EventsEmit(a.ctx, "github:auth:success", nil)
 	}()
 
 	return userCodeInfo, nil

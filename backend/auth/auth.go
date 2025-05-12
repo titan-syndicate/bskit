@@ -6,12 +6,18 @@ import (
 
 // Auth encapsulates the GitHub OAuth functionality.
 type Auth struct {
-	ctx context.Context
+	ctx         context.Context
+	accessToken *AccessToken
 }
 
 // NewAuth creates a new Auth instance.
 func NewAuth(ctx context.Context) *Auth {
 	return &Auth{ctx: ctx}
+}
+
+// GetAccessToken returns the current access token if available
+func (a *Auth) GetAccessToken() *AccessToken {
+	return a.accessToken
 }
 
 // StartGitHubLogin starts the GitHub device flow authentication.
