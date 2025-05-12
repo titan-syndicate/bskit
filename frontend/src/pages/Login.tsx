@@ -13,12 +13,6 @@ interface UserCodeInfo {
   interval: number
 }
 
-interface Repo {
-  name: string
-  description: string
-  url: string
-}
-
 declare global {
   interface Window {
     go: {
@@ -35,7 +29,6 @@ export default function Login() {
   const [userCode, setUserCode] = useState<string | null>(null)
   const [verificationUri, setVerificationUri] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [repos, setRepos] = useState<Repo[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -45,10 +38,9 @@ export default function Login() {
       setIsLoading(true)
     })
 
-    EventsOn('github:auth:success', (token) => {
-      console.log('GitHub auth success:', token)
+    EventsOn('github:auth:success', () => {
+      console.log('GitHub auth success')
       setIsLoading(false)
-      fetchRepos(token.token)
     })
 
     EventsOn('github:auth:error', (error) => {
@@ -58,28 +50,6 @@ export default function Login() {
     })
     console.log('Subscribed to events')
   }, [])
-
-  const fetchRepos = async (token: string) => {
-    try {
-      const response = await fetch('https://api.github.com/user/repos', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      if (!response.ok) {
-        throw new Error('Failed to fetch repositories')
-      }
-      const data = await response.json()
-      setRepos(data.map((repo: any) => ({
-        name: repo.name,
-        description: repo.description,
-        url: repo.html_url,
-      })))
-    } catch (err) {
-      console.error('Error fetching repositories:', err)
-      setError('Failed to fetch repositories. Please try again.')
-    }
-  }
 
   const handleGitHubLogin = async () => {
     try {
@@ -182,27 +152,6 @@ export default function Login() {
           </Button>
         </div>
       </div>
-
-      {repos.length > 0 && (
-        <div className="mt-8">
-          <Heading className="text-2xl/8 font-semibold text-zinc-950 dark:text-white">Your Repositories</Heading>
-          <ul className="mt-4 space-y-4">
-            {repos.map((repo) => (
-              <li key={repo.name} className="rounded-lg border border-zinc-950/10 bg-white p-4 dark:border-white/10 dark:bg-white/5">
-                <a
-                  href={repo.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                  {repo.name}
-                </a>
-                <Text className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{repo.description}</Text>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </div>
   )
 }
