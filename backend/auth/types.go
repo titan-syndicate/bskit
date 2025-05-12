@@ -7,6 +7,7 @@ import (
 
 // UserCodeInfo represents the information needed for GitHub device flow
 type UserCodeInfo struct {
+	DeviceCode      string `json:"deviceCode"`
 	UserCode        string `json:"userCode"`
 	VerificationURI string `json:"verificationUri"`
 	ExpiresIn       int    `json:"expiresIn"`

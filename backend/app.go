@@ -79,8 +79,3 @@ func (a *App) StartBuild() {
 func (a *App) StartGitHubLogin() (*auth.UserCodeInfo, error) {
 	return a.Auth.StartGitHubLogin()
 }
-
-// CompleteGitHubLogin completes the GitHub device flow authentication
-func (a *App) CompleteGitHubLogin() (*auth.AccessToken, error) {
-	return a.Auth.CompleteGitHubLogin()
-}

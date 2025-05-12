@@ -15,11 +15,8 @@ func NewAuth(ctx context.Context) *Auth {
 }
 
 // StartGitHubLogin starts the GitHub device flow authentication.
+// It returns the device code and verification URI, and starts polling for the token in the background.
+// The token will be emitted as an event when available.
 func (a *Auth) StartGitHubLogin() (*UserCodeInfo, error) {
-	return GetUserCodeInfo()
-}
-
-// CompleteGitHubLogin completes the GitHub device flow authentication.
-func (a *Auth) CompleteGitHubLogin() (*AccessToken, error) {
-	return StartDeviceAuth()
+	return a.StartDeviceAuth()
 }

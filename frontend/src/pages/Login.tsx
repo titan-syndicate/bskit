@@ -39,18 +39,22 @@ export default function Login() {
 
   useEffect(() => {
     EventsOn('github:auth:started', () => {
+      console.log('GitHub auth started')
       setIsLoading(true)
     })
 
     EventsOn('github:auth:success', (token) => {
+      console.log('GitHub auth success:', token)
       setIsLoading(false)
       fetchRepos(token.token)
     })
 
     EventsOn('github:auth:error', (error) => {
+      console.log('GitHub auth error:', error)
       setIsLoading(false)
       setError(error)
     })
+    console.log('Subscribed to events')
   }, [])
 
   const fetchRepos = async (token: string) => {
@@ -77,6 +81,7 @@ export default function Login() {
 
   const handleGitHubLogin = async () => {
     try {
+      setIsLoading(true)
       const userCodeInfo = await StartGitHubLogin()
       setUserCode(userCodeInfo.userCode)
       setVerificationUri(userCodeInfo.verificationUri)
@@ -84,6 +89,7 @@ export default function Login() {
     } catch (err) {
       console.error('Failed to start GitHub login:', err)
       setError('Failed to start GitHub login. Please try again.')
+      setIsLoading(false)
     }
   }
 
@@ -103,28 +109,37 @@ export default function Login() {
           </div>
         )}
 
-        {userCode && verificationUri ? (
-          <div className="space-y-4">
-            <div className="rounded-md bg-blue-50 p-4">
-              <Text className="text-sm text-blue-700">
-                1. Go to{' '}
-                <a
-                  href={verificationUri}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium underline"
-                >
-                  {verificationUri}
-                </a>
-              </Text>
+        <div className="space-y-4">
+          {userCode && verificationUri && (
+            <div className="space-y-4">
+              <div className="rounded-md bg-blue-50 p-4">
+                <Text className="text-sm text-blue-700">
+                  1. Go to{' '}
+                  <a
+                    href={verificationUri}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium underline"
+                  >
+                    {verificationUri}
+                  </a>
+                </Text>
+              </div>
+              <div className="rounded-md bg-blue-50 p-4">
+                <Text className="text-sm text-blue-700">
+                  2. Enter code: <span className="font-mono font-bold">{userCode}</span>
+                </Text>
+              </div>
+              {isLoading && (
+                <div className="rounded-md bg-yellow-50 p-4">
+                  <Text className="text-sm text-yellow-700">
+                    Waiting for authorization... {isLoading ? '⏳' : ''}
+                  </Text>
+                </div>
+              )}
             </div>
-            <div className="rounded-md bg-blue-50 p-4">
-              <Text className="text-sm text-blue-700">
-                2. Enter code: <span className="font-mono font-bold">{userCode}</span>
-              </Text>
-            </div>
-          </div>
-        ) : (
+          )}
+
           <Button
             onClick={handleGitHubLogin}
             className="w-full"
@@ -132,7 +147,7 @@ export default function Login() {
           >
             {isLoading ? 'Signing in...' : 'Sign in with GitHub'}
           </Button>
-        )}
+        </div>
 
         {repos.length > 0 && (
           <div className="mt-8">
