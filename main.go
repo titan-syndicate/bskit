@@ -18,8 +18,8 @@ func main() {
 
 	err := wails.Run(&options.App{
 		Title:            "BSKit",
-		Width:            1024,
-		Height:           768,
+		Width:            1536,
+		Height:           1152,
 		Assets:           assets,
 		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 59, A: 1},
 		OnStartup:        app.Startup,
