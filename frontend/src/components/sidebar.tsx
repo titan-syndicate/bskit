@@ -18,6 +18,7 @@ import {
   QuestionMarkCircleIcon,
   SparklesIcon,
   CommandLineIcon,
+  KeyIcon,
 } from '@heroicons/react/24/solid'
 import { Avatar } from './avatar'
 import { Dropdown, DropdownButton, DropdownDivider, DropdownItem, DropdownLabel, DropdownMenu } from './dropdown'
@@ -219,6 +220,10 @@ export function DefaultSidebar() {
         </SidebarItem>
         <SidebarSpacer />
         <SidebarSection>
+          <SidebarItem to="/login" current={location.pathname === '/login'}>
+            <KeyIcon className="size-5" />
+            <SidebarLabel>Sign In</SidebarLabel>
+          </SidebarItem>
           <SidebarItem to="#">
             <QuestionMarkCircleIcon className="size-5" />
             <SidebarLabel>Support</SidebarLabel>

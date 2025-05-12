@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"log"
 
 	"bskit/backend"
 
@@ -28,6 +29,6 @@ func main() {
 	})
 
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
