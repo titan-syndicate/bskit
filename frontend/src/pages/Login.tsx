@@ -1,20 +1,15 @@
 import { Button } from '../components/button'
 import { Heading } from '../components/heading'
 import { Text } from '../components/text'
-import { useState } from 'react'
-import { StartGitHubLogin, CompleteGitHubLogin } from '../../wailsjs/go/backend/App'
+import { useState, useEffect } from 'react'
+import { StartGitHubLogin } from '../../wailsjs/go/backend/App'
+import { EventsOn } from '../../wailsjs/runtime/runtime'
 
 interface UserCodeInfo {
   userCode: string
   verificationUri: string
   expiresIn: number
   interval: number
-}
-
-interface AccessToken {
-  token: string
-  type: string
-  scope: string
 }
 
 interface Repo {
@@ -29,7 +24,6 @@ declare global {
       main: {
         App: {
           StartGitHubLogin: () => Promise<UserCodeInfo>
-          CompleteGitHubLogin: () => Promise<AccessToken>
         }
       }
     }
@@ -41,6 +35,23 @@ export default function Login() {
   const [verificationUri, setVerificationUri] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [repos, setRepos] = useState<Repo[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    EventsOn('github:auth:started', () => {
+      setIsLoading(true)
+    })
+
+    EventsOn('github:auth:success', (token) => {
+      setIsLoading(false)
+      fetchRepos(token.token)
+    })
+
+    EventsOn('github:auth:error', (error) => {
+      setIsLoading(false)
+      setError(error)
+    })
+  }, [])
 
   const fetchRepos = async (token: string) => {
     try {
@@ -70,12 +81,6 @@ export default function Login() {
       setUserCode(userCodeInfo.userCode)
       setVerificationUri(userCodeInfo.verificationUri)
       setError(null)
-
-      // Poll for the token
-      const token = await CompleteGitHubLogin()
-      console.log('Got token:', token)
-      // Fetch repositories using the token
-      await fetchRepos(token.token)
     } catch (err) {
       console.error('Failed to start GitHub login:', err)
       setError('Failed to start GitHub login. Please try again.')
@@ -123,8 +128,9 @@ export default function Login() {
           <Button
             onClick={handleGitHubLogin}
             className="w-full"
+            disabled={isLoading}
           >
-            Sign in with GitHub
+            {isLoading ? 'Signing in...' : 'Sign in with GitHub'}
           </Button>
         )}
 
