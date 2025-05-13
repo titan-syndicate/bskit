@@ -7,6 +7,7 @@ import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import { WebLinksAddon } from 'xterm-addon-web-links'
 import { Dropdown, DropdownButton, DropdownMenu, DropdownItem } from './dropdown'
+import { CheckCircleIcon } from '@heroicons/react/24/solid'
 import 'xterm/css/xterm.css'
 
 interface BuildInterfaceProps {
@@ -17,6 +18,7 @@ interface BuildInterfaceProps {
 export function BuildInterface({ repoPath, repoName }: BuildInterfaceProps) {
   const [selectedPlatform, setSelectedPlatform] = useState<'arm64' | 'amd64'>('arm64')
   const [isBuilding, setIsBuilding] = useState(false)
+  const [buildComplete, setBuildComplete] = useState(false)
   const terminalRef = useRef<HTMLDivElement>(null)
   const terminalInstance = useRef<Terminal | null>(null)
   const fitAddonRef = useRef<FitAddon | null>(null)
@@ -97,6 +99,10 @@ export function BuildInterface({ repoPath, repoName }: BuildInterfaceProps) {
   useEffect(() => {
     const unsubscribe = EventsOn('build:log', (message: string) => {
       terminalInstance.current?.writeln(message)
+      // Check for build completion message
+      if (message.includes('✓ Build completed successfully!')) {
+        setBuildComplete(true)
+      }
     })
 
     return () => {
@@ -106,6 +112,7 @@ export function BuildInterface({ repoPath, repoName }: BuildInterfaceProps) {
 
   const handleBuild = async () => {
     setIsBuilding(true)
+    setBuildComplete(false)
     const term = terminalInstance.current
     if (term) {
       term.writeln(`\r\n\x1b[1;34mStarting build process for platform: ${selectedPlatform}...\x1b[0m\r\n`)
@@ -128,7 +135,15 @@ export function BuildInterface({ repoPath, repoName }: BuildInterfaceProps) {
   return (
     <div className="space-y-8">
       <div className="flex items-end justify-between gap-4">
-        <Heading>Build {repoName}</Heading>
+        <div className="flex items-center gap-4">
+          <Heading>Build {repoName}</Heading>
+          {buildComplete && (
+            <div className="flex items-center gap-2 text-green-500">
+              <CheckCircleIcon className="h-5 w-5" />
+              <span className="text-sm font-medium">Build Complete</span>
+            </div>
+          )}
+        </div>
         <div className="flex items-center gap-4">
           <Dropdown>
             <DropdownButton>
