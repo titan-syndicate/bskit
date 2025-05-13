@@ -3,10 +3,13 @@ package pack
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
@@ -49,15 +52,41 @@ func (p *PackBuilder) Build(sourcePath string) error {
 
 	// Pull the pack image if not available
 	imageName := "buildpacksio/pack:latest"
-	_, _, err = p.dockerClient.ImageInspectWithRaw(p.ctx, imageName)
+	_, err = p.dockerClient.ImageInspect(p.ctx, imageName)
 	if err != nil {
+		if !strings.Contains(err.Error(), "No such image") {
+			return fmt.Errorf("failed to inspect image: %v", err)
+		}
+
 		runtime.EventsEmit(p.ctx, "build:log", "Pulling pack CLI image...")
 		out, err := p.dockerClient.ImagePull(p.ctx, imageName, image.PullOptions{})
 		if err != nil {
 			return fmt.Errorf("failed to pull image: %v", err)
 		}
 		defer out.Close()
-		stdcopy.StdCopy(os.Stdout, os.Stderr, out)
+
+		// Process the JSON stream output
+		decoder := json.NewDecoder(out)
+		for {
+			var pullOutput struct {
+				Status string `json:"status"`
+				ID     string `json:"id"`
+			}
+			if err := decoder.Decode(&pullOutput); err != nil {
+				if err == io.EOF {
+					break
+				}
+				return fmt.Errorf("failed to decode pull output: %v", err)
+			}
+			if pullOutput.Status != "" {
+				runtime.EventsEmit(p.ctx, "build:log", pullOutput.Status)
+			}
+		}
+
+		// Verify the image was pulled successfully
+		if _, err := p.dockerClient.ImageInspect(p.ctx, imageName); err != nil {
+			return fmt.Errorf("image pull completed but image not found: %v", err)
+		}
 	}
 
 	// Prepare command arguments
