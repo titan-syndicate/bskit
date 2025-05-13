@@ -2,12 +2,12 @@ import { Button } from './button'
 import { Heading } from './heading'
 import { useEffect, useRef, useState } from 'react'
 import { StartBuild } from '../../wailsjs/go/backend/App'
-import { EventsOn, EventsEmit } from '../../wailsjs/runtime'
+import { EventsOn, EventsEmit, BrowserOpenURL } from '../../wailsjs/runtime'
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import { WebLinksAddon } from 'xterm-addon-web-links'
 import { Dropdown, DropdownButton, DropdownMenu, DropdownItem } from './dropdown'
-import { CheckCircleIcon, PlayIcon } from '@heroicons/react/24/solid'
+import { CheckCircleIcon } from '@heroicons/react/24/solid'
 import 'xterm/css/xterm.css'
 
 interface BuildInterfaceProps {
@@ -20,6 +20,8 @@ export function BuildInterface({ repoPath, repoName }: BuildInterfaceProps) {
   const [isBuilding, setIsBuilding] = useState(false)
   const [buildComplete, setBuildComplete] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
+  const [appUrl, setAppUrl] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
   const terminalRef = useRef<HTMLDivElement>(null)
   const terminalInstance = useRef<Terminal | null>(null)
   const fitAddonRef = useRef<FitAddon | null>(null)
@@ -134,18 +136,20 @@ export function BuildInterface({ repoPath, repoName }: BuildInterfaceProps) {
   }
 
   const handleRun = async () => {
-    if (!buildComplete) return
-
-    setIsRunning(true)
-    terminalInstance.current?.writeln('\r\nStarting container...\r\n')
-
+    if (isRunning) {
+      BrowserOpenURL(appUrl || 'http://localhost:3000')
+      return
+    }
+    setIsLoading(true)
     try {
       await EventsEmit('run:start', { imageName: repoName })
+      setIsRunning(true)
+      setAppUrl('http://localhost:3000')
     } catch (error) {
       console.error('Run failed:', error)
       terminalInstance.current?.writeln(`Run failed: ${error}\r\n`)
     } finally {
-      setIsRunning(false)
+      setIsLoading(false)
     }
   }
 
@@ -189,11 +193,64 @@ export function BuildInterface({ repoPath, repoName }: BuildInterfaceProps) {
         <div className="flex items-center justify-end gap-4">
           <button
             onClick={handleRun}
-            disabled={isRunning}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isLoading}
+            className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white ${isRunning
+              ? 'bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed'
+              : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed'
+              }`}
           >
-            <PlayIcon className="h-5 w-5 mr-2" />
-            {isRunning ? 'Running...' : 'Run'}
+            {isLoading ? (
+              <>
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                Running...
+              </>
+            ) : isRunning ? (
+              <>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Open App
+              </>
+            ) : (
+              <>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Run
+              </>
+            )}
           </button>
         </div>
       )}
