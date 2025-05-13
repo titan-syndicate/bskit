@@ -7,6 +7,8 @@ import { useEffect, useState } from 'react'
 import { ChevronLeftIcon } from '@heroicons/react/24/solid'
 import { Tab } from '@headlessui/react'
 import clsx from 'clsx'
+import { BuildInterface } from '../../components/build-interface'
+import { ListClonedRepos } from '../../../wailsjs/go/backend/App'
 
 function classNames(...classes: string[]) {
   return clsx(...classes)
@@ -17,6 +19,7 @@ export default function RepoDetails() {
   const navigate = useNavigate()
   const { id } = useParams()
   const [repoName, setRepoName] = useState<string>('')
+  const [repoPath, setRepoPath] = useState<string>('')
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -25,10 +28,22 @@ export default function RepoDetails() {
   }, [isAuthenticated, navigate])
 
   useEffect(() => {
-    if (id) {
-      // For now, just use the ID as the name
-      setRepoName(id)
+    async function fetchRepoPath() {
+      if (id) {
+        try {
+          const repos = await ListClonedRepos()
+          const repo = repos.find((repo: string) => repo.split('/').pop() === id)
+          if (repo) {
+            setRepoPath(repo)
+            setRepoName(id)
+          }
+        } catch (err) {
+          console.error('Failed to fetch repo path:', err)
+        }
+      }
     }
+
+    fetchRepoPath()
   }, [id])
 
   if (!isAuthenticated) {
@@ -91,10 +106,11 @@ export default function RepoDetails() {
               </div>
             </Tab.Panel>
             <Tab.Panel>
-              <div className="space-y-4">
-                {/* CI/CD content will go here */}
-                <p className="text-zinc-500">CI/CD configuration coming soon...</p>
-              </div>
+              {repoPath ? (
+                <BuildInterface repoPath={repoPath} repoName={repoName} />
+              ) : (
+                <p className="text-zinc-500">Loading repository information...</p>
+              )}
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>
