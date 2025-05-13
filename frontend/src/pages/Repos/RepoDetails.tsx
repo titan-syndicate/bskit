@@ -5,7 +5,7 @@ import { useAuth } from '../../contexts/auth-context'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { ChevronLeftIcon } from '@heroicons/react/24/solid'
-import { Tab } from '@headlessui/react'
+import { Tab, TabGroup, TabList, TabPanels, TabPanel } from '@headlessui/react'
 import clsx from 'clsx'
 import { BuildInterface } from '../../components/build-interface'
 import { ListClonedRepos } from '../../../wailsjs/go/backend/App'
@@ -69,8 +69,8 @@ export default function RepoDetails() {
       </div>
 
       <div className="mt-8">
-        <Tab.Group>
-          <Tab.List className="flex space-x-1 border-b border-zinc-200 dark:border-zinc-800">
+        <TabGroup>
+          <TabList className="flex space-x-1 border-b border-zinc-200 dark:border-zinc-800">
             <Tab
               className={({ selected }) =>
                 classNames(
@@ -97,23 +97,23 @@ export default function RepoDetails() {
             >
               CI/CD
             </Tab>
-          </Tab.List>
-          <Tab.Panels className="mt-4">
-            <Tab.Panel>
+          </TabList>
+          <TabPanels className="mt-4">
+            <TabPanel>
               <div className="space-y-4">
                 {/* Details content will go here */}
                 <p className="text-zinc-500">Repository details coming soon...</p>
               </div>
-            </Tab.Panel>
-            <Tab.Panel>
+            </TabPanel>
+            <TabPanel>
               {repoPath ? (
                 <BuildInterface repoPath={repoPath} repoName={repoName} />
               ) : (
                 <p className="text-zinc-500">Loading repository information...</p>
               )}
-            </Tab.Panel>
-          </Tab.Panels>
-        </Tab.Group>
+            </TabPanel>
+          </TabPanels>
+        </TabGroup>
       </div>
     </>
   )

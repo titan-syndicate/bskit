@@ -1,8 +1,13 @@
 import { Button } from './button'
 import { Heading } from './heading'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { StartBuild } from '../../wailsjs/go/backend/App'
 import { EventsOn } from '../../wailsjs/runtime'
+import { Terminal } from 'xterm'
+import { FitAddon } from 'xterm-addon-fit'
+import { WebLinksAddon } from 'xterm-addon-web-links'
+import { Dropdown, DropdownButton, DropdownMenu, DropdownItem } from './dropdown'
+import 'xterm/css/xterm.css'
 
 interface BuildInterfaceProps {
   repoPath: string
@@ -11,13 +16,87 @@ interface BuildInterfaceProps {
 
 export function BuildInterface({ repoPath, repoName }: BuildInterfaceProps) {
   const [selectedPlatform, setSelectedPlatform] = useState<'arm64' | 'amd64'>('arm64')
-  const [buildLog, setBuildLog] = useState<string[]>([])
   const [isBuilding, setIsBuilding] = useState(false)
+  const terminalRef = useRef<HTMLDivElement>(null)
+  const terminalInstance = useRef<Terminal | null>(null)
+  const fitAddonRef = useRef<FitAddon | null>(null)
 
   useEffect(() => {
-    // Subscribe to build log events
+    if (!terminalRef.current) return
+
+    // Initialize terminal
+    const term = new Terminal({
+      cursorBlink: true,
+      fontSize: 14,
+      fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+      theme: {
+        background: '#09090b',
+        foreground: '#ffffff',
+        black: '#000000',
+        red: '#ef4444',
+        green: '#22c55e',
+        yellow: '#eab308',
+        blue: '#3b82f6',
+        magenta: '#d946ef',
+        cyan: '#06b6d4',
+        white: '#f8fafc',
+        brightBlack: '#475569',
+        brightRed: '#f87171',
+        brightGreen: '#4ade80',
+        brightYellow: '#facc15',
+        brightBlue: '#60a5fa',
+        brightMagenta: '#e879f9',
+        brightCyan: '#22d3ee',
+        brightWhite: '#f1f5f9',
+      },
+      scrollback: 10000,
+      convertEol: true,
+      disableStdin: true,
+      allowProposedApi: true,
+      cols: 200,
+      allowTransparency: true,
+      cursorStyle: 'block',
+      drawBoldTextInBrightColors: true,
+      windowsMode: false,
+      scrollOnUserInput: false,
+    })
+
+    // Add addons
+    const fitAddon = new FitAddon()
+    term.loadAddon(fitAddon)
+    term.loadAddon(new WebLinksAddon())
+
+    // Store references
+    terminalInstance.current = term
+    fitAddonRef.current = fitAddon
+
+    // Open terminal
+    term.open(terminalRef.current)
+    fitAddon.fit()
+
+    // Handle window resize
+    const handleResize = () => {
+      if (fitAddonRef.current) {
+        fitAddonRef.current.fit()
+      }
+    }
+
+    // Add resize observer
+    const resizeObserver = new ResizeObserver(handleResize)
+    if (terminalRef.current) {
+      resizeObserver.observe(terminalRef.current)
+    }
+
+    // Cleanup
+    return () => {
+      term.dispose()
+      resizeObserver.disconnect()
+    }
+  }, [])
+
+  useEffect(() => {
     const unsubscribe = EventsOn('build:log', (message: string) => {
-      setBuildLog(prev => [...prev, message])
+      terminalInstance.current?.writeln(message)
     })
 
     return () => {
@@ -27,7 +106,10 @@ export function BuildInterface({ repoPath, repoName }: BuildInterfaceProps) {
 
   const handleBuild = async () => {
     setIsBuilding(true)
-    setBuildLog([])
+    const term = terminalInstance.current
+    if (term) {
+      term.writeln(`\r\n\x1b[1;34mStarting build process for platform: ${selectedPlatform}...\x1b[0m\r\n`)
+    }
 
     try {
       await StartBuild({
@@ -35,8 +117,9 @@ export function BuildInterface({ repoPath, repoName }: BuildInterfaceProps) {
         platform: selectedPlatform,
       })
     } catch (error) {
-      console.error('Build failed:', error)
-      setBuildLog(prev => [...prev, `Error: ${error instanceof Error ? error.message : 'Build failed'}`])
+      if (term) {
+        term.writeln(`\r\n\x1b[1;31mBuild failed: ${error}\x1b[0m\r\n`)
+      }
     } finally {
       setIsBuilding(false)
     }
@@ -47,14 +130,19 @@ export function BuildInterface({ repoPath, repoName }: BuildInterfaceProps) {
       <div className="flex items-end justify-between gap-4">
         <Heading>Build {repoName}</Heading>
         <div className="flex items-center gap-4">
-          <select
-            value={selectedPlatform}
-            onChange={(e) => setSelectedPlatform(e.target.value as 'arm64' | 'amd64')}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm/6 font-medium text-zinc-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
-          >
-            <option value="arm64">ARM64</option>
-            <option value="amd64">AMD64</option>
-          </select>
+          <Dropdown>
+            <DropdownButton>
+              {selectedPlatform === 'arm64' ? 'ARM64' : 'AMD64'}
+            </DropdownButton>
+            <DropdownMenu>
+              <DropdownItem onClick={() => setSelectedPlatform('arm64')}>
+                ARM64
+              </DropdownItem>
+              <DropdownItem onClick={() => setSelectedPlatform('amd64')}>
+                AMD64
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
           <Button onClick={handleBuild} disabled={isBuilding}>
             {isBuilding ? 'Building...' : 'Build'}
           </Button>
@@ -62,17 +150,7 @@ export function BuildInterface({ repoPath, repoName }: BuildInterfaceProps) {
       </div>
 
       <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="font-mono text-sm">
-          {buildLog.length === 0 ? (
-            <div className="text-zinc-500">Build output will appear here...</div>
-          ) : (
-            buildLog.map((line, index) => (
-              <div key={index} className="whitespace-pre-wrap">
-                {line}
-              </div>
-            ))
-          )}
-        </div>
+        <div ref={terminalRef} className="h-[400px] w-full" />
       </div>
     </div>
   )
