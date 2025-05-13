@@ -205,3 +205,110 @@ func pollForToken(ctx context.Context, httpClient *http.Client, userCodeInfo *Us
 		Scope: token.Scope,
 	}, nil
 }
+
+// GetRecentRepos fetches the user's recent repositories using GraphQL
+func (a *Auth) GetRecentRepos() ([]Repo, error) {
+	if a.accessToken == nil {
+		return nil, fmt.Errorf("not authenticated")
+	}
+
+	query := `
+	query {
+		viewer {
+			repositoriesContributedTo(
+				first: 10,
+				contributionTypes: [COMMIT],
+				orderBy: { field: PUSHED_AT, direction: DESC }
+			) {
+				nodes {
+					nameWithOwner
+					url
+					pushedAt
+					defaultBranchRef {
+						name
+					}
+				}
+			}
+		}
+	}`
+
+	// Log the query we're about to send
+	log.Printf("Sending GraphQL query: %s", query)
+
+	// Create request body
+	requestBody := map[string]interface{}{
+		"query": query,
+	}
+	jsonBody, err := json.Marshal(requestBody)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request body: %w", err)
+	}
+
+	req, err := http.NewRequest("POST", "https://api.github.com/graphql", bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", a.accessToken.Token))
+	req.Header.Set("Content-Type", "application/json")
+
+	// Log request details
+	log.Printf("Making request to GitHub GraphQL API with headers: %v", req.Header)
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch repos: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Read and log the response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+	log.Printf("GitHub API Response Status: %d", resp.StatusCode)
+	log.Printf("GitHub API Response Body: %s", string(body))
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to fetch repos: status code %d, body: %s", resp.StatusCode, string(body))
+	}
+
+	var result struct {
+		Data struct {
+			Viewer struct {
+				RepositoriesContributedTo struct {
+					Nodes []Repo `json:"nodes"`
+				} `json:"repositoriesContributedTo"`
+			} `json:"viewer"`
+		} `json:"data"`
+		Errors []struct {
+			Message string `json:"message"`
+		} `json:"errors,omitempty"`
+	}
+
+	if err := json.NewDecoder(bytes.NewReader(body)).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	// Log any GraphQL errors
+	if len(result.Errors) > 0 {
+		for _, err := range result.Errors {
+			log.Printf("GraphQL Error: %s", err.Message)
+		}
+		return nil, fmt.Errorf("graphql errors: %v", result.Errors)
+	}
+
+	// Log successful response
+	log.Printf("Successfully fetched %d repositories", len(result.Data.Viewer.RepositoriesContributedTo.Nodes))
+
+	return result.Data.Viewer.RepositoriesContributedTo.Nodes, nil
+}
+
+// Repo represents a GitHub repository
+type Repo struct {
+	NameWithOwner string    `json:"nameWithOwner"`
+	URL           string    `json:"url"`
+	PushedAt      time.Time `json:"pushedAt"`
+	DefaultBranch string    `json:"defaultBranch"`
+}
