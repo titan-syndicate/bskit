@@ -33,24 +33,33 @@ func NewRunner(ctx context.Context) (*Runner, error) {
 }
 
 func (r *Runner) RunContainer(imageName string) error {
-	// Get the container from the image
-	container := r.client.Container().From(imageName)
+	// 1) Prep the host socket
+	socket := r.client.Host().UnixSocket("/var/run/docker.sock")
 
-	// Get Docker socket
-	dockerSocket := r.client.Host().UnixSocket("/var/run/docker.sock")
+	// 2) In a docker CLI container, save your local image into /tmp/image.tar
+	tarFile := r.client.
+		Container().
+		From("docker:23.0.1-cli").
+		WithUnixSocket("/var/run/docker.sock", socket).
+		WithExec([]string{
+			"docker", "image", "save", "-o", "/tmp/image.tar", imageName,
+		}).
+		File("/tmp/image.tar")
 
-	// Configure container with Docker socket and exposed port
-	container = container.
-		WithUnixSocket("/var/run/docker.sock", dockerSocket).
+	// 3) Import that tarball as a real Container in Dagger
+	ctr := r.client.
+		Container().
+		Import(tarFile).
+		WithUnixSocket("/var/run/docker.sock", socket).
 		WithExposedPort(3000)
 
-	// Start the container
-	_, err := container.Sync(r.ctx)
-	if err != nil {
+	// 4) Kick it off (Sync or Stdout will block until exit, but logs stream via WithLogOutput)
+	if _, err := ctr.Sync(r.ctx); err != nil {
 		return fmt.Errorf("failed to start container: %w", err)
 	}
 
-	// Stream logs to the frontend
+	// 5) Meanwhile your dagger.Connect was set up with WithLogOutput(&r.logBuf),
+	//    so all `docker run` output is flowing into r.logBuf in real time.
 	go func() {
 		for {
 			select {
