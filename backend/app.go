@@ -57,13 +57,13 @@ func (a *App) Startup(ctx context.Context) {
 	// Add event listener for build:start
 	runtime.EventsOn(a.eventCtx, "build:start", func(data ...interface{}) {
 		if len(data) > 0 {
-			if selectedDirectory, ok := data[0].(string); ok {
-				a.StartBuild(selectedDirectory)
+			if buildData, ok := data[0].(map[string]interface{}); ok {
+				a.StartBuild(buildData)
 			} else {
-				runtime.EventsEmit(a.ctx, "build:log", "Error: Invalid directory received.")
+				runtime.EventsEmit(a.ctx, "build:log", "Error: Invalid build data received.")
 			}
 		} else {
-			runtime.EventsEmit(a.ctx, "build:log", "Error: No directory received.")
+			runtime.EventsEmit(a.ctx, "build:log", "Error: No build data received.")
 		}
 	})
 
@@ -77,7 +77,19 @@ func (a *App) Startup(ctx context.Context) {
 }
 
 // StartBuild starts the build process using pack CLI
-func (a *App) StartBuild(selectedDirectory string) {
+func (a *App) StartBuild(data map[string]interface{}) {
+	selectedDirectory, ok := data["selectedDirectory"].(string)
+	if !ok || selectedDirectory == "" {
+		runtime.EventsEmit(a.ctx, "build:log", "Error: No directory selected.")
+		return
+	}
+
+	platform, ok := data["platform"].(string)
+	if !ok || (platform != "arm64" && platform != "amd64") {
+		runtime.EventsEmit(a.ctx, "build:log", "Error: Invalid platform selected.")
+		return
+	}
+
 	// Validate the selected directory
 	absPath, err := filepath.Abs(selectedDirectory)
 	if err != nil {
@@ -86,7 +98,7 @@ func (a *App) StartBuild(selectedDirectory string) {
 	}
 
 	// Start the build process
-	if err := a.packBuilder.Build(absPath); err != nil {
+	if err := a.packBuilder.Build(absPath, platform); err != nil {
 		runtime.EventsEmit(a.ctx, "build:log", fmt.Sprintf("Error: build failed: %v", err))
 	}
 }

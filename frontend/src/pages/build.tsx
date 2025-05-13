@@ -40,6 +40,7 @@ export default function BuildPage() {
   const fitAddonRef = useRef<FitAddon | null>(null)
   const [isBuilding, setIsBuilding] = useState(false)
   const [selectedDirectory, setSelectedDirectory] = useState<string | null>(null)
+  const [platform, setPlatform] = useState<'arm64' | 'amd64'>('arm64');
 
   useEffect(() => {
     // Add scrollbar styles
@@ -147,29 +148,33 @@ export default function BuildPage() {
     return () => unsubscribe();
   }, []);
 
-  const handleBuild = async () => {
-    if (isBuilding) return
+  const handleTogglePlatform = () => {
+    setPlatform((prevPlatform) => (prevPlatform === 'arm64' ? 'amd64' : 'arm64'));
+  };
 
-    setIsBuilding(true)
-    const term = terminalInstance.current
+  const handleBuild = async () => {
+    if (isBuilding) return;
+
+    setIsBuilding(true);
+    const term = terminalInstance.current;
     if (term) {
-      term.writeln('\r\n\x1b[1;34mStarting build process...\x1b[0m\r\n')
+      term.writeln(`\r\n\x1b[1;34mStarting build process for platform: ${platform}...\x1b[0m\r\n`);
     }
 
     try {
       if (selectedDirectory) {
-        await EventsEmit('build:start', selectedDirectory);
+        await EventsEmit('build:start', { selectedDirectory, platform });
       } else {
         term?.writeln('\r\n\x1b[1;31mError: No directory selected.\x1b[0m\r\n');
       }
     } catch (error) {
       if (term) {
-        term.writeln(`\r\n\x1b[1;31mBuild failed: ${error}\x1b[0m\r\n`)
+        term.writeln(`\r\n\x1b[1;31mBuild failed: ${error}\x1b[0m\r\n`);
       }
     } finally {
-      setIsBuilding(false)
+      setIsBuilding(false);
     }
-  }
+  };
 
   const handleSelectDirectory = async () => {
     EventsEmit('directory:select');
@@ -187,6 +192,12 @@ export default function BuildPage() {
             className="mr-2"
           >
             Select Directory
+          </Button>
+          <Button
+            onClick={handleTogglePlatform}
+            className="mr-2"
+          >
+            Switch to {platform === 'arm64' ? 'amd64' : 'arm64'}
           </Button>
           <Button
             onClick={handleBuild}

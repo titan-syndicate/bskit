@@ -38,7 +38,7 @@ func NewPackBuilder(ctx context.Context) (*PackBuilder, error) {
 	}, nil
 }
 
-func (p *PackBuilder) Build(selectedDirectory string) error {
+func (p *PackBuilder) Build(selectedDirectory, platform string) error {
 	// Validate selected directory exists
 	if _, err := os.Stat(selectedDirectory); os.IsNotExist(err) {
 		return fmt.Errorf("selected directory does not exist: %s", selectedDirectory)
@@ -94,7 +94,7 @@ func (p *PackBuilder) Build(selectedDirectory string) error {
 	buildArgs = append(buildArgs, "--path", "/workspace")
 	buildArgs = append(buildArgs, "--builder", "paketobuildpacks/builder-jammy-base")
 	buildArgs = append(buildArgs, "--creation-time", "now")
-	buildArgs = append(buildArgs, "--platform", "linux/arm64")
+	buildArgs = append(buildArgs, "--platform", "linux/"+platform)
 
 	// Create container config
 	config := &container.Config{

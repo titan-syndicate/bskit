@@ -3,4 +3,4 @@
 
 export function SelectDirectory():Promise<string>;
 
-export function StartBuild(arg1:string):Promise<void>;
+export function StartBuild(arg1:Record<string, any>):Promise<void>;
