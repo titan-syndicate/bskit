@@ -9,8 +9,6 @@ import { Link } from './link'
 import { useLocation } from 'react-router-dom'
 import {
   HomeIcon,
-  CalendarIcon,
-  ShoppingBagIcon,
   Cog6ToothIcon,
   ChevronDownIcon,
   ChevronUpIcon,
@@ -19,6 +17,7 @@ import {
   SparklesIcon,
   CommandLineIcon,
   KeyIcon,
+  CodeBracketIcon,
 } from '@heroicons/react/24/solid'
 import { Avatar } from './avatar'
 import { Dropdown, DropdownButton, DropdownDivider, DropdownItem, DropdownLabel, DropdownMenu } from './dropdown'
@@ -171,8 +170,8 @@ export function DefaultSidebar() {
       <SidebarHeader>
         <Dropdown>
           <DropdownButton as={SidebarItem}>
-            <Avatar src="/teams/catalyst.svg" className="size-6" data-slot="avatar" />
-            <SidebarLabel>Catalyst</SidebarLabel>
+            <Avatar src="/logos/appicon.png" className="size-6" data-slot="avatar" />
+            <SidebarLabel>bskit</SidebarLabel>
             <ChevronDownIcon className="size-4" data-slot="icon" />
           </DropdownButton>
           <DropdownMenu className="min-w-80 lg:min-w-64" anchor="bottom start">
@@ -182,8 +181,8 @@ export function DefaultSidebar() {
             </DropdownItem>
             <DropdownDivider />
             <DropdownItem to="#">
-              <Avatar src="/teams/catalyst.svg" className="size-6" data-slot="avatar" />
-              <DropdownLabel>Catalyst</DropdownLabel>
+              <Avatar src="/logos/appicon.png" className="size-6" data-slot="avatar" />
+              <DropdownLabel>bskit</DropdownLabel>
             </DropdownItem>
             <DropdownItem to="#">
               <Avatar initials="BE" className="size-6 bg-purple-500 text-white" data-slot="avatar" />
@@ -199,17 +198,13 @@ export function DefaultSidebar() {
       </SidebarHeader>
       <SidebarBody>
         <SidebarSection>
-          <SidebarItem to="/" current={location.pathname === '/'}>
+          <SidebarItem to="/repos" current={location.pathname === '/'}>
             <HomeIcon className="size-5" />
             <SidebarLabel>Home</SidebarLabel>
           </SidebarItem>
-          <SidebarItem to="/events" current={location.pathname.startsWith('/events')}>
-            <CalendarIcon className="size-5" />
-            <SidebarLabel>Events</SidebarLabel>
-          </SidebarItem>
-          <SidebarItem to="/orders" current={location.pathname.startsWith('/orders')}>
-            <ShoppingBagIcon className="size-5" />
-            <SidebarLabel>Orders</SidebarLabel>
+          <SidebarItem to="/repos" current={location.pathname.startsWith('/repos')}>
+            <CodeBracketIcon className="size-5" />
+            <SidebarLabel>Repositories</SidebarLabel>
           </SidebarItem>
           <SidebarItem to="/build" current={location.pathname.startsWith('/terminal')}>
             <CommandLineIcon className="size-5" />
