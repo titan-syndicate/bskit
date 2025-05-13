@@ -8,6 +8,7 @@ import (
 
 	"bskit/backend/pack"
 
+	"github.com/sqweek/dialog"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -53,13 +54,32 @@ func (a *App) Startup(ctx context.Context) {
 		}
 	})
 
+	// Add event listener for build:start
+	runtime.EventsOn(a.eventCtx, "build:start", func(data ...interface{}) {
+		if len(data) > 0 {
+			if selectedDirectory, ok := data[0].(string); ok {
+				a.StartBuild(selectedDirectory)
+			} else {
+				runtime.EventsEmit(a.ctx, "build:log", "Error: Invalid directory received.")
+			}
+		} else {
+			runtime.EventsEmit(a.ctx, "build:log", "Error: No directory received.")
+		}
+	})
+
+	// Add event listener for directory selection
+	runtime.EventsOn(a.eventCtx, "directory:select", func(data ...interface{}) {
+		selectedDirectory := a.SelectDirectory()
+		runtime.EventsEmit(a.ctx, "directory:selected", selectedDirectory)
+	})
+
 	fmt.Printf("Event listeners set up complete\n")
 }
 
 // StartBuild starts the build process using pack CLI
-func (a *App) StartBuild() {
-	// Get the absolute path to the test-app directory
-	absPath, err := filepath.Abs("test-app")
+func (a *App) StartBuild(selectedDirectory string) {
+	// Validate the selected directory
+	absPath, err := filepath.Abs(selectedDirectory)
 	if err != nil {
 		runtime.EventsEmit(a.ctx, "build:log", fmt.Sprintf("Error: failed to get absolute path: %v", err))
 		return
@@ -69,4 +89,14 @@ func (a *App) StartBuild() {
 	if err := a.packBuilder.Build(absPath); err != nil {
 		runtime.EventsEmit(a.ctx, "build:log", fmt.Sprintf("Error: build failed: %v", err))
 	}
+}
+
+// SelectDirectory opens a directory selection dialog and returns the selected path
+func (a *App) SelectDirectory() string {
+	selectedDirectory, err := dialog.Directory().Title("Select Directory").Browse()
+	if err != nil {
+		log.Printf("Error selecting directory: %v", err)
+		return ""
+	}
+	return selectedDirectory
 }

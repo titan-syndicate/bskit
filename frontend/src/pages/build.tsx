@@ -4,8 +4,7 @@ import { FitAddon } from 'xterm-addon-fit'
 import { WebLinksAddon } from 'xterm-addon-web-links'
 import { Heading } from '../components/heading'
 import { Divider } from '../components/divider'
-import { EventsOn, EventsEmit } from '../../wailsjs/runtime/runtime'
-import { StartBuild } from '../../wailsjs/go/backend/App'
+import { EventsOn, EventsEmit } from '../../wailsjs/runtime/runtime' // Corrected import
 import { Button } from '../components/button'
 import 'xterm/css/xterm.css'
 
@@ -40,6 +39,7 @@ export default function BuildPage() {
   const terminalInstance = useRef<Terminal | null>(null)
   const fitAddonRef = useRef<FitAddon | null>(null)
   const [isBuilding, setIsBuilding] = useState(false)
+  const [selectedDirectory, setSelectedDirectory] = useState<string | null>(null)
 
   useEffect(() => {
     // Add scrollbar styles
@@ -134,6 +134,19 @@ export default function BuildPage() {
     }
   }, [])
 
+  useEffect(() => {
+    const unsubscribe = EventsOn('directory:selected', (selectedDirectory: string) => {
+      if (selectedDirectory) {
+        setSelectedDirectory(selectedDirectory);
+        terminalInstance.current?.writeln(`\r\n\x1b[1;34mSelected directory: ${selectedDirectory}\x1b[0m\r\n`);
+      } else {
+        terminalInstance.current?.writeln('\r\n\x1b[1;31mNo directory selected.\x1b[0m\r\n');
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   const handleBuild = async () => {
     if (isBuilding) return
 
@@ -144,7 +157,11 @@ export default function BuildPage() {
     }
 
     try {
-      await StartBuild()
+      if (selectedDirectory) {
+        await EventsEmit('build:start', selectedDirectory);
+      } else {
+        term?.writeln('\r\n\x1b[1;31mError: No directory selected.\x1b[0m\r\n');
+      }
     } catch (error) {
       if (term) {
         term.writeln(`\r\n\x1b[1;31mBuild failed: ${error}\x1b[0m\r\n`)
@@ -154,19 +171,31 @@ export default function BuildPage() {
     }
   }
 
+  const handleSelectDirectory = async () => {
+    EventsEmit('directory:select');
+  };
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="max-sm:w-full sm:flex-1">
           <Heading>Build</Heading>
         </div>
-        <Button
-          onClick={handleBuild}
-          disabled={isBuilding}
-          className={isBuilding ? 'opacity-50 cursor-not-allowed' : ''}
-        >
-          {isBuilding ? 'Building...' : 'Start Build'}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleSelectDirectory}
+            className="mr-2"
+          >
+            Select Directory
+          </Button>
+          <Button
+            onClick={handleBuild}
+            disabled={isBuilding}
+            className={isBuilding ? 'opacity-50 cursor-not-allowed' : ''}
+          >
+            {isBuilding ? 'Building...' : 'Start Build'}
+          </Button>
+        </div>
       </div>
       <div className="mt-4">
         <Divider />

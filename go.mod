@@ -4,11 +4,13 @@ go 1.23
 
 require (
 	github.com/docker/docker v28.1.1+incompatible
+	github.com/sqweek/dialog v0.0.0-20240226140203-065105509627
 	github.com/wailsapp/wails/v2 v2.10.1
 )
 
 require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
+	github.com/TheTitanrain/w32 v0.0.0-20180517000239-4f5cfb03fabf // indirect
 	github.com/bep/debounce v1.2.1 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
