@@ -116,6 +116,7 @@ func (a *App) SelectDirectory() string {
 		return ""
 	}
 	return selectedDirectory
+}
 
 // StartGitHubLogin starts the GitHub device flow authentication
 func (a *App) StartGitHubLogin() (*auth.UserCodeInfo, error) {
