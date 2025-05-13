@@ -4,3 +4,4 @@ frontend/dist
 demo/
 frontend/tsconfig.tsbuildinfo
 .DS_Store
+**/.DS_Store
