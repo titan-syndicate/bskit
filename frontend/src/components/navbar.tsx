@@ -6,9 +6,6 @@ import { LayoutGroup, motion } from 'framer-motion'
 import React, { forwardRef, useId } from 'react'
 import { TouchTarget } from './button'
 import { Link } from './link'
-import { Avatar } from './avatar'
-import { Dropdown, DropdownButton } from './dropdown'
-import { AccountDropdownMenu } from './account-dropdown-menu'
 
 interface NavbarProps {
   children: React.ReactNode
