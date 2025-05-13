@@ -4,8 +4,9 @@ import { Text } from '../components/text'
 import { useState, useEffect } from 'react'
 import { StartGitHubLogin } from '../../wailsjs/go/backend/App'
 import { EventsOn, BrowserOpenURL } from '../../wailsjs/runtime/runtime'
-import { ClipboardIcon, CheckIcon } from '@heroicons/react/16/solid'
+import { ClipboardIcon, CheckIcon, ArrowPathIcon } from '@heroicons/react/16/solid'
 import LoginConfirmation from './LoginConfirmation'
+import { useAuth } from '../contexts/auth-context'
 
 interface UserCodeInfo {
   userCode: string
@@ -32,7 +33,7 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const { isAuthenticated } = useAuth()
 
   useEffect(() => {
     EventsOn('github:auth:started', () => {
@@ -40,23 +41,15 @@ export default function Login() {
       setIsLoading(true)
     })
 
-    EventsOn('github:auth:success', () => {
-      console.log('GitHub auth success')
-      setIsLoading(false)
-      setIsLoggedIn(true)
-    })
-
     EventsOn('github:auth:error', (error) => {
       console.log('GitHub auth error:', error)
       setIsLoading(false)
       setError(error)
     })
-    console.log('Subscribed to events')
   }, [])
 
   const handleGitHubLogin = async () => {
     try {
-      setIsLoading(true)
       setIsLoading(true)
       const userCodeInfo = await StartGitHubLogin()
       setUserCode(userCodeInfo.userCode)
@@ -83,7 +76,7 @@ export default function Login() {
     }
   }
 
-  if (isLoggedIn) {
+  if (isAuthenticated) {
     return <LoginConfirmation />
   }
 
@@ -139,8 +132,9 @@ export default function Login() {
               </div>
               {isLoading && (
                 <div className="rounded-lg border border-yellow-500/20 bg-yellow-50/50 dark:bg-yellow-500/5 p-4">
-                  <Text className="text-sm text-yellow-700 dark:text-yellow-400">
-                    Waiting for authorization... {isLoading ? '⏳' : ''}
+                  <Text className="text-sm text-yellow-700 dark:text-yellow-400 flex items-center gap-2">
+                    <ArrowPathIcon className="size-4 animate-spin" />
+                    Waiting for authorization...
                   </Text>
                 </div>
               )}
