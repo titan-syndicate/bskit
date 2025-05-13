@@ -50,7 +50,6 @@ func (r *Runner) RunContainer(imageName string) error {
 	ctr := r.client.
 		Container().
 		Import(tarFile).
-		WithUnixSocket("/var/run/docker.sock", socket).
 		WithExposedPort(3000)
 
 	// 4) Kick it off (Sync or Stdout will block until exit, but logs stream via WithLogOutput)
