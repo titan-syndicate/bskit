@@ -3,8 +3,7 @@ export namespace auth {
 	export class Repo {
 	    nameWithOwner: string;
 	    url: string;
-	    // Go type: time
-	    pushedAt: any;
+	    pushedAt: string;
 	    defaultBranch: string;
 	
 	    static createFrom(source: any = {}) {
@@ -15,27 +14,9 @@ export namespace auth {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.nameWithOwner = source["nameWithOwner"];
 	        this.url = source["url"];
-	        this.pushedAt = this.convertValues(source["pushedAt"], null);
+	        this.pushedAt = source["pushedAt"];
 	        this.defaultBranch = source["defaultBranch"];
 	    }
-	
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice && a.map) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
 	}
 	export class UserCodeInfo {
 	    deviceCode: string;

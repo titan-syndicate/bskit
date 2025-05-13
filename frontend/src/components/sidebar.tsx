@@ -170,7 +170,7 @@ export function DefaultSidebar() {
       <SidebarHeader>
         <Dropdown>
           <DropdownButton as={SidebarItem}>
-            <Avatar src="/teams/catalyst.svg" className="size-6" data-slot="avatar" />
+            <Avatar src="/logos/appicon.png" className="size-6" data-slot="avatar" />
             <SidebarLabel>bskit</SidebarLabel>
             <ChevronDownIcon className="size-4" data-slot="icon" />
           </DropdownButton>
@@ -181,7 +181,7 @@ export function DefaultSidebar() {
             </DropdownItem>
             <DropdownDivider />
             <DropdownItem to="#">
-              <Avatar src="/logs/appicon.png" className="size-6" data-slot="avatar" />
+              <Avatar src="/logos/appicon.png" className="size-6" data-slot="avatar" />
               <DropdownLabel>bskit</DropdownLabel>
             </DropdownItem>
             <DropdownItem to="#">

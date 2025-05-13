@@ -307,8 +307,8 @@ func (a *Auth) GetRecentRepos() ([]Repo, error) {
 
 // Repo represents a GitHub repository
 type Repo struct {
-	NameWithOwner string    `json:"nameWithOwner"`
-	URL           string    `json:"url"`
-	PushedAt      time.Time `json:"pushedAt"`
-	DefaultBranch string    `json:"defaultBranch"`
+	NameWithOwner string `json:"nameWithOwner"`
+	URL           string `json:"url"`
+	PushedAt      string `json:"pushedAt"`
+	DefaultBranch string `json:"defaultBranch"`
 }
