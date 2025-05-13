@@ -11,6 +11,7 @@ import OrderDetails from './pages/Orders/[id]'
 import Settings from './pages/Settings'
 import TerminalPage from './pages/build'
 import Login from './pages/Login'
+import Repos from './pages/Repos'
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/build" element={<TerminalPage />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/repos" element={<Repos />} />
         </Route>
       </Routes>
     </HelmetProvider>

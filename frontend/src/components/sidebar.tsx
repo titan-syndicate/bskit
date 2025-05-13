@@ -203,6 +203,10 @@ export function DefaultSidebar() {
             <HomeIcon className="size-5" />
             <SidebarLabel>Home</SidebarLabel>
           </SidebarItem>
+          <SidebarItem to="/repos" current={location.pathname.startsWith('/repos')}>
+            <CommandLineIcon className="size-5" />
+            <SidebarLabel>Repositories</SidebarLabel>
+          </SidebarItem>
           <SidebarItem to="/events" current={location.pathname.startsWith('/events')}>
             <CalendarIcon className="size-5" />
             <SidebarLabel>Events</SidebarLabel>
