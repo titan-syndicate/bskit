@@ -1,6 +1,9 @@
 import { Button } from '../components/button'
 import { Heading } from '../components/heading'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/table'
+import { useAuth } from '../contexts/auth-context'
+import { useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 
 // Dummy data for now
 const repos = [
@@ -22,6 +25,19 @@ const repos = [
 ]
 
 export default function Repos() {
+  const { isAuthenticated } = useAuth()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login')
+    }
+  }, [isAuthenticated, navigate])
+
+  if (!isAuthenticated) {
+    return null
+  }
+
   return (
     <>
       <div className="flex items-end justify-between gap-4">
