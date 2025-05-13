@@ -24,7 +24,7 @@ export default function Repos() {
     async function fetchClonedRepos() {
       try {
         const repos = await ListClonedRepos()
-        setClonedRepos(repos)
+        setClonedRepos(repos || [])
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch cloned repositories')
       } finally {
