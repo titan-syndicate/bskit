@@ -6,18 +6,21 @@ import (
 	"log"
 	"path/filepath"
 
+	"bskit/backend/auth"
 	"bskit/backend/pack"
 
 	"github.com/sqweek/dialog"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
+// TODO: refactor to use an interface based approach
 // App struct
 type App struct {
 	ctx         context.Context
 	readyChan   chan struct{}
 	eventCtx    context.Context
 	packBuilder *pack.PackBuilder
+	Auth        *auth.Auth
 }
 
 // NewApp creates a new App application struct
@@ -74,6 +77,8 @@ func (a *App) Startup(ctx context.Context) {
 	})
 
 	fmt.Printf("Event listeners set up complete\n")
+
+	a.Auth = auth.NewAuth(ctx)
 }
 
 // StartBuild starts the build process using pack CLI
@@ -111,4 +116,8 @@ func (a *App) SelectDirectory() string {
 		return ""
 	}
 	return selectedDirectory
+
+// StartGitHubLogin starts the GitHub device flow authentication
+func (a *App) StartGitHubLogin() (*auth.UserCodeInfo, error) {
+	return a.Auth.StartGitHubLogin()
 }

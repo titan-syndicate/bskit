@@ -9,3 +9,7 @@ export function SelectDirectory() {
 export function StartBuild(arg1) {
   return window['go']['backend']['App']['StartBuild'](arg1);
 }
+
+export function StartGitHubLogin() {
+  return window['go']['backend']['App']['StartGitHubLogin']();
+}
