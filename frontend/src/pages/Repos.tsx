@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/auth-context'
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { ListClonedRepos } from '../../wailsjs/go/backend/App'
+import { Link } from '../components/link'
 
 export default function Repos() {
   const { isAuthenticated } = useAuth()
@@ -76,17 +77,22 @@ export default function Repos() {
               </TableCell>
             </TableRow>
           ) : (
-            clonedRepos.map((repoPath) => (
-              <TableRow key={repoPath}>
-                <TableCell className="font-medium">{repoPath.split('/').pop()}</TableCell>
-                <TableCell className="text-zinc-500">{repoPath}</TableCell>
-                <TableCell className="text-right">
-                  <Button color="light">
-                    Open
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))
+            clonedRepos.map((repoPath) => {
+              const repoName = repoPath.split('/').pop() || ''
+              return (
+                <TableRow key={repoPath}>
+                  <TableCell className="font-medium">
+                    <Link to={`/repos/${repoName}`}>{repoName}</Link>
+                  </TableCell>
+                  <TableCell className="text-zinc-500">{repoPath}</TableCell>
+                  <TableCell className="text-right">
+                    <Button color="light">
+                      Open
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              )
+            })
           )}
         </TableBody>
       </Table>
