@@ -193,12 +193,33 @@ export default function BuildPage() {
           >
             Select Directory
           </Button>
-          <Button
-            onClick={handleTogglePlatform}
-            className="mr-2"
-          >
-            Switch to {platform === 'arm64' ? 'amd64' : 'arm64'}
-          </Button>
+          <div className="inline-flex items-center gap-2">
+            <label
+              htmlFor="platformToggle"
+              className="text-slate-600 text-sm cursor-pointer"
+            >
+              arm64
+            </label>
+            <div className="relative inline-block w-11 h-5">
+              <input
+                id="platformToggle"
+                type="checkbox"
+                className="peer appearance-none w-11 h-5 bg-slate-100 rounded-full checked:bg-slate-800 cursor-pointer transition-colors duration-300"
+                checked={platform === 'amd64'}
+                onChange={handleTogglePlatform}
+              />
+              <label
+                htmlFor="platformToggle"
+                className="absolute top-0 left-0 w-5 h-5 bg-white rounded-full border border-slate-300 shadow-sm transition-transform duration-300 peer-checked:translate-x-6 peer-checked:border-slate-800 cursor-pointer"
+              ></label>
+            </div>
+            <label
+              htmlFor="platformToggle"
+              className="text-slate-600 text-sm cursor-pointer"
+            >
+              amd64
+            </label>
+          </div>
           <Button
             onClick={handleBuild}
             disabled={isBuilding}
