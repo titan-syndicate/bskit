@@ -3,3 +3,4 @@ node_modules
 frontend/dist
 demo/
 frontend/tsconfig.tsbuildinfo
+.DS_Store
