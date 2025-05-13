@@ -12,6 +12,7 @@ import Settings from './pages/Settings'
 import TerminalPage from './pages/build'
 import Login from './pages/Login'
 import Repos from './pages/Repos'
+import AddRepo from './pages/AddRepo'
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/build" element={<TerminalPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/repos" element={<Repos />} />
+          <Route path="/repos/add" element={<AddRepo />} />
         </Route>
       </Routes>
     </HelmetProvider>

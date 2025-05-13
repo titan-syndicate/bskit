@@ -25,7 +25,7 @@ export default function LoginConfirmation() {
         <div className="space-y-4">
           <Button
             className="w-full bg-[#24292F] hover:bg-[#24292F]/90 text-white"
-            onClick={() => navigate('/build')}
+            onClick={() => navigate('/repos')}
           >
             Get Started
           </Button>
