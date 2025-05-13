@@ -21,6 +21,14 @@ type AccessToken struct {
 	Scope string `json:"scope"`
 }
 
+// UserInfo represents the user information returned by GitHub API
+type UserInfo struct {
+	Login     string `json:"login"`
+	AvatarUrl string `json:"avatar_url"`
+	Email     string `json:"email"`
+	Name      string `json:"name"`
+}
+
 // Convert from GitHub OAuth API types to our types
 func convertUserCodeInfo(info *device.CodeResponse) *UserCodeInfo {
 	return &UserCodeInfo{

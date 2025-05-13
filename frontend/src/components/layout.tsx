@@ -14,7 +14,7 @@ interface LayoutProps {
 }
 
 export function Layout({ title = 'BSKit', description = 'Event management platform' }: LayoutProps) {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, userInfo } = useAuth()
 
   return (
     <>
@@ -30,7 +30,7 @@ export function Layout({ title = 'BSKit', description = 'Event management platfo
               <Dropdown>
                 <DropdownButton as={NavbarItem}>
                   <Avatar
-                    src={isAuthenticated ? "/users/erica.jpg" : "/users/placeholder.svg"}
+                    src={isAuthenticated && userInfo ? userInfo.avatar_url : "/users/placeholder.svg"}
                     square
                     data-slot="avatar"
                   />

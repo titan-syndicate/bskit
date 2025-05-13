@@ -1,8 +1,11 @@
 package auth
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"time"
@@ -13,6 +16,7 @@ import (
 
 const (
 	githubClientID = "Ov23li0AfjoGWqBjdoqe"
+	githubAPIURL   = "https://api.github.com"
 )
 
 // StartDeviceAuth starts the GitHub device flow authentication.
@@ -55,18 +59,112 @@ func (a *Auth) StartDeviceAuth() (*UserCodeInfo, error) {
 		// Store the token in memory
 		a.accessToken = accessToken
 
-		// Emit success event without the token
-		runtime.EventsEmit(a.ctx, "github:auth:success", nil)
+		// Fetch user info
+		userInfo, err := a.fetchUserInfo(token.Token)
+		if err != nil {
+			log.Printf("Error fetching user info: %v", err)
+			runtime.EventsEmit(a.ctx, "github:auth:error", err.Error())
+			return
+		}
+
+		// Emit success event with user info
+		runtime.EventsEmit(a.ctx, "github:auth:success", userInfo)
 	}()
 
 	return userCodeInfo, nil
+}
+
+// fetchUserInfo fetches the user's information from GitHub API
+func (a *Auth) fetchUserInfo(token string) (*UserInfo, error) {
+	// Fetch basic user info
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/user", githubAPIURL), nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch user info: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to fetch user info: status code %d", resp.StatusCode)
+	}
+
+	// Read the raw response body for logging
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+	log.Printf("GitHub API Response (user): %s", string(body))
+
+	// Create a new reader from the body for decoding
+	var userInfo UserInfo
+	if err := json.NewDecoder(bytes.NewReader(body)).Decode(&userInfo); err != nil {
+		return nil, fmt.Errorf("failed to decode user info: %w", err)
+	}
+
+	// Fetch user emails
+	emailReq, err := http.NewRequest("GET", fmt.Sprintf("%s/user/emails", githubAPIURL), nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create email request: %w", err)
+	}
+
+	emailReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	emailReq.Header.Set("Accept", "application/vnd.github.v3+json")
+
+	emailResp, err := client.Do(emailReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch user emails: %w", err)
+	}
+	defer emailResp.Body.Close()
+
+	if emailResp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to fetch user emails: status code %d", emailResp.StatusCode)
+	}
+
+	// Read the raw email response body for logging
+	emailBody, err := io.ReadAll(emailResp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read email response body: %w", err)
+	}
+	log.Printf("GitHub API Response (emails): %s", string(emailBody))
+
+	// Parse email addresses
+	var emails []struct {
+		Email    string `json:"email"`
+		Primary  bool   `json:"primary"`
+		Verified bool   `json:"verified"`
+	}
+	if err := json.NewDecoder(bytes.NewReader(emailBody)).Decode(&emails); err != nil {
+		return nil, fmt.Errorf("failed to decode email info: %w", err)
+	}
+
+	// Find primary email
+	for _, email := range emails {
+		if email.Primary && email.Verified {
+			userInfo.Email = email.Email
+			break
+		}
+	}
+
+	log.Printf("Final UserInfo: %+v", userInfo)
+	return &userInfo, nil
 }
 
 // GetUserCodeInfo requests a user code and verification URI from GitHub.
 func GetUserCodeInfo() (*UserCodeInfo, error) {
 	log.Println("Requesting device code from GitHub...")
 	httpClient := &http.Client{Timeout: 10 * time.Second}
-	code, err := device.RequestCode(httpClient, "https://github.com/login/device/code", githubClientID, nil)
+	code, err := device.RequestCode(httpClient, "https://github.com/login/device/code", githubClientID, []string{
+		"read:user",  // For basic profile info
+		"user:email", // For email access
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to request device code: %w", err)
 	}

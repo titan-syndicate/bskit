@@ -1,9 +1,17 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { EventsOn } from '../../wailsjs/runtime/runtime'
 
+interface UserInfo {
+  login: string
+  avatar_url: string
+  email: string
+  name: string
+}
+
 interface AuthContextType {
   isAuthenticated: boolean
-  login: () => void
+  userInfo: UserInfo | null
+  login: (userInfo: UserInfo) => void
   logout: () => void
 }
 
@@ -11,24 +19,34 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
 
   useEffect(() => {
-    EventsOn('github:auth:success', () => {
-      console.log('GitHub auth success in AuthProvider')
+    EventsOn('github:auth:success', (userInfo: UserInfo) => {
+      console.log('GitHub auth success in AuthProvider:', userInfo)
       setIsAuthenticated(true)
+      setUserInfo(userInfo)
     })
 
     EventsOn('github:auth:error', (error) => {
       console.log('GitHub auth error in AuthProvider:', error)
       setIsAuthenticated(false)
+      setUserInfo(null)
     })
   }, [])
 
-  const login = () => setIsAuthenticated(true)
-  const logout = () => setIsAuthenticated(false)
+  const login = (userInfo: UserInfo) => {
+    setIsAuthenticated(true)
+    setUserInfo(userInfo)
+  }
+
+  const logout = () => {
+    setIsAuthenticated(false)
+    setUserInfo(null)
+  }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, userInfo, login, logout }}>
       {children}
     </AuthContext.Provider>
   )
