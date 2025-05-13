@@ -5,6 +5,12 @@ import { useAuth } from '../../contexts/auth-context'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { ChevronLeftIcon } from '@heroicons/react/24/solid'
+import { Tab } from '@headlessui/react'
+import clsx from 'clsx'
+
+function classNames(...classes: string[]) {
+  return clsx(...classes)
+}
 
 export default function RepoDetails() {
   const { isAuthenticated } = useAuth()
@@ -45,6 +51,53 @@ export default function RepoDetails() {
           <Button outline>Edit</Button>
           <Button>Open</Button>
         </div>
+      </div>
+
+      <div className="mt-8">
+        <Tab.Group>
+          <Tab.List className="flex space-x-1 border-b border-zinc-200 dark:border-zinc-800">
+            <Tab
+              className={({ selected }) =>
+                classNames(
+                  'px-4 py-2 text-sm font-medium leading-5',
+                  'focus:outline-none',
+                  selected
+                    ? 'border-b-2 border-zinc-900 text-zinc-900 dark:border-white dark:text-white'
+                    : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300'
+                )
+              }
+            >
+              Details
+            </Tab>
+            <Tab
+              className={({ selected }) =>
+                classNames(
+                  'px-4 py-2 text-sm font-medium leading-5',
+                  'focus:outline-none',
+                  selected
+                    ? 'border-b-2 border-zinc-900 text-zinc-900 dark:border-white dark:text-white'
+                    : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300'
+                )
+              }
+            >
+              CI/CD
+            </Tab>
+          </Tab.List>
+          <Tab.Panels className="mt-4">
+            <Tab.Panel>
+              <div className="space-y-4">
+                {/* Details content will go here */}
+                <p className="text-zinc-500">Repository details coming soon...</p>
+              </div>
+            </Tab.Panel>
+            <Tab.Panel>
+              <div className="space-y-4">
+                {/* CI/CD content will go here */}
+                <p className="text-zinc-500">CI/CD configuration coming soon...</p>
+              </div>
+            </Tab.Panel>
+          </Tab.Panels>
+        </Tab.Group>
       </div>
     </>
   )
