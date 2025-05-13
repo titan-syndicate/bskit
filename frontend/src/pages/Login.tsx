@@ -15,6 +15,7 @@ interface UserCodeInfo {
   interval: number
 }
 
+// TODO: remove this 
 declare global {
   interface Window {
     go: {
