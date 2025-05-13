@@ -2,12 +2,12 @@ import { Button } from './button'
 import { Heading } from './heading'
 import { useEffect, useRef, useState } from 'react'
 import { StartBuild } from '../../wailsjs/go/backend/App'
-import { EventsOn } from '../../wailsjs/runtime'
+import { EventsOn, EventsEmit } from '../../wailsjs/runtime'
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import { WebLinksAddon } from 'xterm-addon-web-links'
 import { Dropdown, DropdownButton, DropdownMenu, DropdownItem } from './dropdown'
-import { CheckCircleIcon } from '@heroicons/react/24/solid'
+import { CheckCircleIcon, PlayIcon } from '@heroicons/react/24/solid'
 import 'xterm/css/xterm.css'
 
 interface BuildInterfaceProps {
@@ -19,6 +19,7 @@ export function BuildInterface({ repoPath, repoName }: BuildInterfaceProps) {
   const [selectedPlatform, setSelectedPlatform] = useState<'arm64' | 'amd64'>('arm64')
   const [isBuilding, setIsBuilding] = useState(false)
   const [buildComplete, setBuildComplete] = useState(false)
+  const [isRunning, setIsRunning] = useState(false)
   const terminalRef = useRef<HTMLDivElement>(null)
   const terminalInstance = useRef<Terminal | null>(null)
   const fitAddonRef = useRef<FitAddon | null>(null)
@@ -132,6 +133,22 @@ export function BuildInterface({ repoPath, repoName }: BuildInterfaceProps) {
     }
   }
 
+  const handleRun = async () => {
+    if (!buildComplete) return
+
+    setIsRunning(true)
+    terminalInstance.current?.writeln('\r\nStarting container...\r\n')
+
+    try {
+      await EventsEmit('run:start', { imageName: repoName })
+    } catch (error) {
+      console.error('Run failed:', error)
+      terminalInstance.current?.writeln(`Run failed: ${error}\r\n`)
+    } finally {
+      setIsRunning(false)
+    }
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex items-end justify-between gap-4">
@@ -167,6 +184,19 @@ export function BuildInterface({ repoPath, repoName }: BuildInterfaceProps) {
       <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <div ref={terminalRef} className="h-[400px] w-full" />
       </div>
+
+      {buildComplete && (
+        <div className="flex items-center justify-end gap-4">
+          <button
+            onClick={handleRun}
+            disabled={isRunning}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <PlayIcon className="h-5 w-5 mr-2" />
+            {isRunning ? 'Running...' : 'Run'}
+          </button>
+        </div>
+      )}
     </div>
   )
 }

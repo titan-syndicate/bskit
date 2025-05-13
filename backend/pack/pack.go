@@ -44,6 +44,9 @@ func (p *PackBuilder) Build(selectedDirectory, platform string) error {
 		return fmt.Errorf("selected directory does not exist: %s", selectedDirectory)
 	}
 
+	// Get repo name from directory
+	repoName := filepath.Base(selectedDirectory)
+
 	// Use selected directory for Docker mount
 	absSelectedPath, err := filepath.Abs(selectedDirectory)
 	if err != nil {
@@ -90,7 +93,7 @@ func (p *PackBuilder) Build(selectedDirectory, platform string) error {
 	}
 
 	// Prepare command arguments
-	buildArgs := []string{"build", "test-app"}
+	buildArgs := []string{"build", repoName}
 	buildArgs = append(buildArgs, "--path", "/workspace")
 	buildArgs = append(buildArgs, "--builder", "paketobuildpacks/builder-jammy-base")
 	buildArgs = append(buildArgs, "--creation-time", "now")
@@ -172,7 +175,7 @@ func (p *PackBuilder) Build(selectedDirectory, platform string) error {
 	// Add completion message
 	runtime.EventsEmit(p.ctx, "build:log", "\n\x1b[1;32m✓ Build completed successfully!\x1b[0m")
 	runtime.EventsEmit(p.ctx, "build:log", "\nTo run the application, use:")
-	runtime.EventsEmit(p.ctx, "build:log", "\n\x1b[1;34m$ docker run -p 3000:3000 test-app\x1b[0m")
+	runtime.EventsEmit(p.ctx, "build:log", fmt.Sprintf("\n\x1b[1;34m$ docker run -p 3000:3000 %s\x1b[0m", repoName))
 	runtime.EventsEmit(p.ctx, "build:log", "\nThe application will be available at http://localhost:3000")
 
 	return nil
