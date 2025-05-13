@@ -9,6 +9,7 @@ import (
 	"bskit/backend/auth"
 	"bskit/backend/pack"
 
+	"github.com/sqweek/dialog"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -56,25 +57,65 @@ func (a *App) Startup(ctx context.Context) {
 		}
 	})
 
+	// Add event listener for build:start
+	runtime.EventsOn(a.eventCtx, "build:start", func(data ...interface{}) {
+		if len(data) > 0 {
+			if buildData, ok := data[0].(map[string]interface{}); ok {
+				a.StartBuild(buildData)
+			} else {
+				runtime.EventsEmit(a.ctx, "build:log", "Error: Invalid build data received.")
+			}
+		} else {
+			runtime.EventsEmit(a.ctx, "build:log", "Error: No build data received.")
+		}
+	})
+
+	// Add event listener for directory selection
+	runtime.EventsOn(a.eventCtx, "directory:select", func(data ...interface{}) {
+		selectedDirectory := a.SelectDirectory()
+		runtime.EventsEmit(a.ctx, "directory:selected", selectedDirectory)
+	})
+
 	fmt.Printf("Event listeners set up complete\n")
 
 	a.Auth = auth.NewAuth(ctx)
 }
 
 // StartBuild starts the build process using pack CLI
-func (a *App) StartBuild() {
-	// Get the absolute path to the test-app directory
-	absPath, err := filepath.Abs("test-app")
+func (a *App) StartBuild(data map[string]interface{}) {
+	selectedDirectory, ok := data["selectedDirectory"].(string)
+	if !ok || selectedDirectory == "" {
+		runtime.EventsEmit(a.ctx, "build:log", "Error: No directory selected.")
+		return
+	}
+
+	platform, ok := data["platform"].(string)
+	if !ok || (platform != "arm64" && platform != "amd64") {
+		runtime.EventsEmit(a.ctx, "build:log", "Error: Invalid platform selected.")
+		return
+	}
+
+	// Validate the selected directory
+	absPath, err := filepath.Abs(selectedDirectory)
 	if err != nil {
 		runtime.EventsEmit(a.ctx, "build:log", fmt.Sprintf("Error: failed to get absolute path: %v", err))
 		return
 	}
 
 	// Start the build process
-	if err := a.packBuilder.Build(absPath); err != nil {
+	if err := a.packBuilder.Build(absPath, platform); err != nil {
 		runtime.EventsEmit(a.ctx, "build:log", fmt.Sprintf("Error: build failed: %v", err))
 	}
 }
+
+// SelectDirectory opens a directory selection dialog and returns the selected path
+func (a *App) SelectDirectory() string {
+	selectedDirectory, err := dialog.Directory().Title("Select Directory").Browse()
+	if err != nil {
+		log.Printf("Error selecting directory: %v", err)
+		return ""
+	}
+	return selectedDirectory
 
 // StartGitHubLogin starts the GitHub device flow authentication
 func (a *App) StartGitHubLogin() (*auth.UserCodeInfo, error) {

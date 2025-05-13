@@ -38,14 +38,14 @@ func NewPackBuilder(ctx context.Context) (*PackBuilder, error) {
 	}, nil
 }
 
-func (p *PackBuilder) Build(sourcePath string) error {
-	// Validate path exists
-	if _, err := os.Stat(sourcePath); os.IsNotExist(err) {
-		return fmt.Errorf("path does not exist: %s", sourcePath)
+func (p *PackBuilder) Build(selectedDirectory, platform string) error {
+	// Validate selected directory exists
+	if _, err := os.Stat(selectedDirectory); os.IsNotExist(err) {
+		return fmt.Errorf("selected directory does not exist: %s", selectedDirectory)
 	}
 
-	// Get absolute path of source directory
-	absPath, err := filepath.Abs(sourcePath)
+	// Use selected directory for Docker mount
+	absSelectedPath, err := filepath.Abs(selectedDirectory)
 	if err != nil {
 		return fmt.Errorf("failed to get absolute path: %v", err)
 	}
@@ -94,6 +94,7 @@ func (p *PackBuilder) Build(sourcePath string) error {
 	buildArgs = append(buildArgs, "--path", "/workspace")
 	buildArgs = append(buildArgs, "--builder", "paketobuildpacks/builder-jammy-base")
 	buildArgs = append(buildArgs, "--creation-time", "now")
+	buildArgs = append(buildArgs, "--platform", "linux/"+platform)
 
 	// Create container config
 	config := &container.Config{
@@ -105,7 +106,7 @@ func (p *PackBuilder) Build(sourcePath string) error {
 	// Create host config with volume mount
 	hostConfig := &container.HostConfig{
 		Binds: []string{
-			fmt.Sprintf("%s:/workspace", absPath),
+			fmt.Sprintf("%s:/workspace", absSelectedPath),
 			"/var/run/docker.sock:/var/run/docker.sock",
 		},
 		// Ensure the container has access to the Docker socket

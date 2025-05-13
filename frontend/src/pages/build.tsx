@@ -4,8 +4,7 @@ import { FitAddon } from 'xterm-addon-fit'
 import { WebLinksAddon } from 'xterm-addon-web-links'
 import { Heading } from '../components/heading'
 import { Divider } from '../components/divider'
-import { EventsOn, EventsEmit } from '../../wailsjs/runtime/runtime'
-import { StartBuild } from '../../wailsjs/go/backend/App'
+import { EventsOn, EventsEmit } from '../../wailsjs/runtime/runtime' // Corrected import
 import { Button } from '../components/button'
 import 'xterm/css/xterm.css'
 
@@ -40,6 +39,8 @@ export default function BuildPage() {
   const terminalInstance = useRef<Terminal | null>(null)
   const fitAddonRef = useRef<FitAddon | null>(null)
   const [isBuilding, setIsBuilding] = useState(false)
+  const [selectedDirectory, setSelectedDirectory] = useState<string | null>(null)
+  const [platform, setPlatform] = useState<'arm64' | 'amd64'>('arm64');
 
   useEffect(() => {
     // Add scrollbar styles
@@ -134,25 +135,50 @@ export default function BuildPage() {
     }
   }, [])
 
-  const handleBuild = async () => {
-    if (isBuilding) return
+  useEffect(() => {
+    const unsubscribe = EventsOn('directory:selected', (selectedDirectory: string) => {
+      if (selectedDirectory) {
+        setSelectedDirectory(selectedDirectory);
+        terminalInstance.current?.writeln(`\r\n\x1b[1;34mSelected directory: ${selectedDirectory}\x1b[0m\r\n`);
+      } else {
+        terminalInstance.current?.writeln('\r\n\x1b[1;31mNo directory selected.\x1b[0m\r\n');
+      }
+    });
 
-    setIsBuilding(true)
-    const term = terminalInstance.current
+    return () => unsubscribe();
+  }, []);
+
+  const handleTogglePlatform = () => {
+    setPlatform((prevPlatform) => (prevPlatform === 'arm64' ? 'amd64' : 'arm64'));
+  };
+
+  const handleBuild = async () => {
+    if (isBuilding) return;
+
+    setIsBuilding(true);
+    const term = terminalInstance.current;
     if (term) {
-      term.writeln('\r\n\x1b[1;34mStarting build process...\x1b[0m\r\n')
+      term.writeln(`\r\n\x1b[1;34mStarting build process for platform: ${platform}...\x1b[0m\r\n`);
     }
 
     try {
-      await StartBuild()
+      if (selectedDirectory) {
+        await EventsEmit('build:start', { selectedDirectory, platform });
+      } else {
+        term?.writeln('\r\n\x1b[1;31mError: No directory selected.\x1b[0m\r\n');
+      }
     } catch (error) {
       if (term) {
-        term.writeln(`\r\n\x1b[1;31mBuild failed: ${error}\x1b[0m\r\n`)
+        term.writeln(`\r\n\x1b[1;31mBuild failed: ${error}\x1b[0m\r\n`);
       }
     } finally {
-      setIsBuilding(false)
+      setIsBuilding(false);
     }
-  }
+  };
+
+  const handleSelectDirectory = async () => {
+    EventsEmit('directory:select');
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -160,13 +186,48 @@ export default function BuildPage() {
         <div className="max-sm:w-full sm:flex-1">
           <Heading>Build</Heading>
         </div>
-        <Button
-          onClick={handleBuild}
-          disabled={isBuilding}
-          className={isBuilding ? 'opacity-50 cursor-not-allowed' : ''}
-        >
-          {isBuilding ? 'Building...' : 'Start Build'}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleSelectDirectory}
+            className="mr-2"
+          >
+            Select Directory
+          </Button>
+          <div className="inline-flex items-center gap-2">
+            <label
+              htmlFor="platformToggle"
+              className="text-slate-600 text-sm cursor-pointer"
+            >
+              arm64
+            </label>
+            <div className="relative inline-block w-11 h-5">
+              <input
+                id="platformToggle"
+                type="checkbox"
+                className="peer appearance-none w-11 h-5 bg-slate-100 rounded-full checked:bg-slate-800 cursor-pointer transition-colors duration-300"
+                checked={platform === 'amd64'}
+                onChange={handleTogglePlatform}
+              />
+              <label
+                htmlFor="platformToggle"
+                className="absolute top-0 left-0 w-5 h-5 bg-white rounded-full border border-slate-300 shadow-sm transition-transform duration-300 peer-checked:translate-x-6 peer-checked:border-slate-800 cursor-pointer"
+              ></label>
+            </div>
+            <label
+              htmlFor="platformToggle"
+              className="text-slate-600 text-sm cursor-pointer"
+            >
+              amd64
+            </label>
+          </div>
+          <Button
+            onClick={handleBuild}
+            disabled={isBuilding}
+            className={isBuilding ? 'opacity-50 cursor-not-allowed' : ''}
+          >
+            {isBuilding ? 'Building...' : 'Start Build'}
+          </Button>
+        </div>
       </div>
       <div className="mt-4">
         <Divider />
