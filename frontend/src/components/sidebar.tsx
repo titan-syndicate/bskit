@@ -23,6 +23,7 @@ import {
 import { Avatar } from './avatar'
 import { Dropdown, DropdownButton, DropdownDivider, DropdownItem, DropdownLabel, DropdownMenu } from './dropdown'
 import { AccountDropdownMenu } from './account-dropdown-menu'
+import { useAuth } from '../contexts/auth-context'
 
 export function Sidebar({ className, ...props }: React.ComponentPropsWithoutRef<'nav'>) {
   // return <nav {...props} className={clsx(className, 'flex h-full min-h-0 flex-col bg-white dark:bg-zinc-900')} />
@@ -163,6 +164,7 @@ export function SidebarLabel({ className, ...props }: React.ComponentPropsWithou
 
 export function DefaultSidebar() {
   const location = useLocation()
+  const { isAuthenticated } = useAuth()
 
   return (
     <Sidebar>
@@ -238,17 +240,24 @@ export function DefaultSidebar() {
         <Dropdown>
           <DropdownButton as={SidebarItem}>
             <span className="flex min-w-0 items-center gap-3">
-              <Avatar src="/users/erica.jpg" className="size-10" square alt="" />
+              <Avatar
+                src={isAuthenticated ? "/users/erica.jpg" : "/users/placeholder.jpg"}
+                className="size-10"
+                square
+                alt=""
+              />
               <span className="min-w-0">
-                <span className="block truncate text-sm/5 font-medium text-zinc-950 dark:text-white">Erica</span>
+                <span className="block truncate text-sm/5 font-medium text-zinc-950 dark:text-white">
+                  {isAuthenticated ? "Erica" : "Guest"}
+                </span>
                 <span className="block truncate text-xs/5 font-normal text-zinc-500 dark:text-zinc-400">
-                  erica@example.com
+                  {isAuthenticated ? "erica@example.com" : "Sign in to continue"}
                 </span>
               </span>
             </span>
             <ChevronUpIcon className="size-4" data-slot="icon" />
           </DropdownButton>
-          <AccountDropdownMenu anchor="top start" />
+          <AccountDropdownMenu anchor="bottom end" />
         </Dropdown>
       </SidebarFooter>
     </Sidebar>

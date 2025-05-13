@@ -103,17 +103,3 @@ export const NavbarItem = forwardRef(function NavbarItem(
 export function NavbarLabel({ className, ...props }: React.ComponentPropsWithoutRef<'span'>) {
   return <span {...props} className={clsx(className, 'truncate')} />
 }
-
-export function UserNavbar({ children }: { children?: React.ReactNode }) {
-  return (
-    <div className="flex items-center gap-3">
-      {children}
-      <Dropdown>
-        <DropdownButton as={NavbarItem}>
-          <Avatar src="/users/erica.jpg" square data-slot="avatar" />
-        </DropdownButton>
-        <AccountDropdownMenu anchor="bottom end" />
-      </Dropdown>
-    </div>
-  )
-}

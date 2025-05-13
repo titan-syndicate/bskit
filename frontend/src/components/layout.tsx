@@ -6,6 +6,7 @@ import { SidebarLayout } from './sidebar-layout'
 import { Dropdown, DropdownButton } from './dropdown'
 import { Avatar } from './avatar'
 import { AccountDropdownMenu } from './account-dropdown-menu'
+import { useAuth } from '../contexts/auth-context'
 
 interface LayoutProps {
   title?: string
@@ -13,6 +14,8 @@ interface LayoutProps {
 }
 
 export function Layout({ title = 'BSKit', description = 'Event management platform' }: LayoutProps) {
+  const { isAuthenticated } = useAuth()
+
   return (
     <>
       <Helmet>
@@ -26,7 +29,11 @@ export function Layout({ title = 'BSKit', description = 'Event management platfo
             <NavbarSection>
               <Dropdown>
                 <DropdownButton as={NavbarItem}>
-                  <Avatar src="/users/erica.jpg" square data-slot="avatar" />
+                  <Avatar
+                    src={isAuthenticated ? "/users/erica.jpg" : "/users/placeholder.jpg"}
+                    square
+                    data-slot="avatar"
+                  />
                 </DropdownButton>
                 <AccountDropdownMenu anchor="bottom end" />
               </Dropdown>
