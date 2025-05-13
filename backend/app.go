@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"bskit/backend/auth"
+	"bskit/backend/dagger"
 	"bskit/backend/pack"
 	"bskit/backend/repo"
 
@@ -17,12 +18,13 @@ import (
 // TODO: refactor to use an interface based approach
 // App struct
 type App struct {
-	ctx         context.Context
-	readyChan   chan struct{}
-	eventCtx    context.Context
-	packBuilder *pack.PackBuilder
-	Auth        *auth.Auth
-	repo        *repo.RepoManager
+	ctx          context.Context
+	readyChan    chan struct{}
+	eventCtx     context.Context
+	packBuilder  *pack.PackBuilder
+	Auth         *auth.Auth
+	repo         *repo.RepoManager
+	daggerRunner *dagger.Runner
 }
 
 // NewApp creates a new App application struct
@@ -57,6 +59,13 @@ func (a *App) Startup(ctx context.Context) {
 		return
 	}
 
+	// Initialize dagger runner
+	a.daggerRunner, err = dagger.NewRunner(ctx)
+	if err != nil {
+		log.Printf("Failed to initialize dagger runner: %v", err)
+		return
+	}
+
 	// Set up event listener for when frontend connects
 	runtime.EventsOn(a.eventCtx, "build:ready", func(data ...interface{}) {
 		fmt.Printf("Received build:ready event\n")
@@ -78,6 +87,25 @@ func (a *App) Startup(ctx context.Context) {
 			}
 		} else {
 			runtime.EventsEmit(a.ctx, "build:log", "Error: No build data received.")
+		}
+	})
+
+	// Add event listener for run:start
+	runtime.EventsOn(a.eventCtx, "run:start", func(data ...interface{}) {
+		if len(data) > 0 {
+			if runData, ok := data[0].(map[string]interface{}); ok {
+				if imageName, ok := runData["imageName"].(string); ok {
+					if err := a.daggerRunner.RunContainer(imageName); err != nil {
+						runtime.EventsEmit(a.ctx, "build:log", fmt.Sprintf("Error: failed to run container: %v", err))
+					}
+				} else {
+					runtime.EventsEmit(a.ctx, "build:log", "Error: Invalid image name received.")
+				}
+			} else {
+				runtime.EventsEmit(a.ctx, "build:log", "Error: Invalid run data received.")
+			}
+		} else {
+			runtime.EventsEmit(a.ctx, "build:log", "Error: No run data received.")
 		}
 	})
 

@@ -13,6 +13,7 @@ import TerminalPage from './pages/build'
 import Login from './pages/Login'
 import Repos from './pages/Repos'
 import AddRepo from './pages/AddRepo'
+import RepoDetails from './pages/Repos/RepoDetails'
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/repos" element={<Repos />} />
           <Route path="/repos/add" element={<AddRepo />} />
+          <Route path="/repos/:id" element={<RepoDetails />} />
         </Route>
       </Routes>
     </HelmetProvider>

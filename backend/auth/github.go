@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/cli/oauth/device"
@@ -215,9 +216,23 @@ func (a *Auth) GetRecentRepos() ([]Repo, error) {
 	query := `
 	query {
 		viewer {
+			repositories(
+				first: 20,
+				orderBy: { field: PUSHED_AT, direction: DESC },
+				affiliations: [OWNER, COLLABORATOR, ORGANIZATION_MEMBER]
+			) {
+				nodes {
+					nameWithOwner
+					url
+					pushedAt
+					defaultBranchRef {
+						name
+					}
+				}
+			}
 			repositoriesContributedTo(
-				first: 10,
-				contributionTypes: [COMMIT],
+				first: 20,
+				contributionTypes: [COMMIT, PULL_REQUEST, ISSUE],
 				orderBy: { field: PUSHED_AT, direction: DESC }
 			) {
 				nodes {
@@ -232,10 +247,8 @@ func (a *Auth) GetRecentRepos() ([]Repo, error) {
 		}
 	}`
 
-	// Log the query we're about to send
 	log.Printf("Sending GraphQL query: %s", query)
 
-	// Create request body
 	requestBody := map[string]interface{}{
 		"query": query,
 	}
@@ -252,7 +265,6 @@ func (a *Auth) GetRecentRepos() ([]Repo, error) {
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", a.accessToken.Token))
 	req.Header.Set("Content-Type", "application/json")
 
-	// Log request details
 	log.Printf("Making request to GitHub GraphQL API with headers: %v", req.Header)
 
 	client := &http.Client{Timeout: 10 * time.Second}
@@ -262,7 +274,6 @@ func (a *Auth) GetRecentRepos() ([]Repo, error) {
 	}
 	defer resp.Body.Close()
 
-	// Read and log the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
@@ -277,8 +288,25 @@ func (a *Auth) GetRecentRepos() ([]Repo, error) {
 	var result struct {
 		Data struct {
 			Viewer struct {
+				Repositories struct {
+					Nodes []struct {
+						NameWithOwner    string `json:"nameWithOwner"`
+						URL              string `json:"url"`
+						PushedAt         string `json:"pushedAt"`
+						DefaultBranchRef struct {
+							Name string `json:"name"`
+						} `json:"defaultBranchRef"`
+					} `json:"nodes"`
+				} `json:"repositories"`
 				RepositoriesContributedTo struct {
-					Nodes []Repo `json:"nodes"`
+					Nodes []struct {
+						NameWithOwner    string `json:"nameWithOwner"`
+						URL              string `json:"url"`
+						PushedAt         string `json:"pushedAt"`
+						DefaultBranchRef struct {
+							Name string `json:"name"`
+						} `json:"defaultBranchRef"`
+					} `json:"nodes"`
 				} `json:"repositoriesContributedTo"`
 			} `json:"viewer"`
 		} `json:"data"`
@@ -291,7 +319,6 @@ func (a *Auth) GetRecentRepos() ([]Repo, error) {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 
-	// Log any GraphQL errors
 	if len(result.Errors) > 0 {
 		for _, err := range result.Errors {
 			log.Printf("GraphQL Error: %s", err.Message)
@@ -299,10 +326,42 @@ func (a *Auth) GetRecentRepos() ([]Repo, error) {
 		return nil, fmt.Errorf("graphql errors: %v", result.Errors)
 	}
 
-	// Log successful response
-	log.Printf("Successfully fetched %d repositories", len(result.Data.Viewer.RepositoriesContributedTo.Nodes))
+	repoMap := make(map[string]Repo)
+	for _, n := range result.Data.Viewer.Repositories.Nodes {
+		repoMap[n.NameWithOwner] = Repo{
+			NameWithOwner: n.NameWithOwner,
+			URL:           n.URL,
+			PushedAt:      n.PushedAt,
+			DefaultBranch: n.DefaultBranchRef.Name,
+		}
+	}
+	for _, n := range result.Data.Viewer.RepositoriesContributedTo.Nodes {
+		repoMap[n.NameWithOwner] = Repo{
+			NameWithOwner: n.NameWithOwner,
+			URL:           n.URL,
+			PushedAt:      n.PushedAt,
+			DefaultBranch: n.DefaultBranchRef.Name,
+		}
+	}
 
-	return result.Data.Viewer.RepositoriesContributedTo.Nodes, nil
+	// Convert map to slice
+	var repos []Repo
+	for _, repo := range repoMap {
+		repos = append(repos, repo)
+	}
+
+	// Sort by pushedAt descending
+	sort.Slice(repos, func(i, j int) bool {
+		return repos[i].PushedAt > repos[j].PushedAt
+	})
+
+	// Return only the first 10
+	if len(repos) > 10 {
+		repos = repos[:10]
+	}
+
+	log.Printf("Returning %d recent repos after collation and sorting", len(repos))
+	return repos, nil
 }
 
 // Repo represents a GitHub repository
