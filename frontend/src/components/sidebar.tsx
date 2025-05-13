@@ -241,7 +241,7 @@ export function DefaultSidebar() {
           <DropdownButton as={SidebarItem}>
             <span className="flex min-w-0 items-center gap-3">
               <Avatar
-                src={isAuthenticated ? "/users/erica.jpg" : "/users/placeholder.jpg"}
+                src={isAuthenticated ? "/users/erica.jpg" : "/users/placeholder.svg"}
                 className="size-10"
                 square
                 alt=""

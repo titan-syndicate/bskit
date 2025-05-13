@@ -30,7 +30,7 @@ export function Layout({ title = 'BSKit', description = 'Event management platfo
               <Dropdown>
                 <DropdownButton as={NavbarItem}>
                   <Avatar
-                    src={isAuthenticated ? "/users/erica.jpg" : "/users/placeholder.jpg"}
+                    src={isAuthenticated ? "/users/erica.jpg" : "/users/placeholder.svg"}
                     square
                     data-slot="avatar"
                   />
