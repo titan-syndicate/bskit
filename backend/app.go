@@ -8,6 +8,7 @@ import (
 
 	"bskit/backend/auth"
 	"bskit/backend/pack"
+	"bskit/backend/repo"
 
 	"github.com/sqweek/dialog"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -21,12 +22,19 @@ type App struct {
 	eventCtx    context.Context
 	packBuilder *pack.PackBuilder
 	Auth        *auth.Auth
+	repo        *repo.RepoManager
 }
 
 // NewApp creates a new App application struct
 func NewApp() *App {
+	repoManager, err := repo.NewRepoManager()
+	if err != nil {
+		log.Printf("Failed to initialize repo manager: %v", err)
+		return nil
+	}
 	return &App{
 		readyChan: make(chan struct{}),
+		repo:      repoManager,
 	}
 }
 
@@ -37,6 +45,9 @@ func (a *App) Startup(ctx context.Context) {
 	a.eventCtx = ctx
 
 	fmt.Printf("Setting up event listeners...\n")
+
+	// Initialize auth with the correct context
+	a.Auth = auth.NewAuth(ctx)
 
 	// Initialize pack builder
 	var err error
@@ -77,8 +88,6 @@ func (a *App) Startup(ctx context.Context) {
 	})
 
 	fmt.Printf("Event listeners set up complete\n")
-
-	a.Auth = auth.NewAuth(ctx)
 }
 
 // StartBuild starts the build process using pack CLI
@@ -121,4 +130,24 @@ func (a *App) SelectDirectory() string {
 // StartGitHubLogin starts the GitHub device flow authentication
 func (a *App) StartGitHubLogin() (*auth.UserCodeInfo, error) {
 	return a.Auth.StartGitHubLogin()
+}
+
+// GetRecentRepos returns the user's recent repositories
+func (a *App) GetRecentRepos() ([]auth.Repo, error) {
+	return a.Auth.GetRecentRepos()
+}
+
+// CloneRepo clones a GitHub repository
+func (a *App) CloneRepo(url string) (string, error) {
+	return a.repo.CloneRepo(url)
+}
+
+// GetRepoStatus checks if a repository is already cloned
+func (a *App) GetRepoStatus(url string) (*repo.RepoStatus, error) {
+	return a.repo.GetRepoStatus(url)
+}
+
+// ListClonedRepos returns a list of all cloned repositories
+func (a *App) ListClonedRepos() ([]string, error) {
+	return a.repo.ListClonedRepos()
 }
