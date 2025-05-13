@@ -12,6 +12,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
+// TODO: refactor to use an interface based approach
 // App struct
 type App struct {
 	ctx         context.Context
