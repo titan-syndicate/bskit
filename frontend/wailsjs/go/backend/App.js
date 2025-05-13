@@ -5,3 +5,7 @@
 export function StartBuild() {
   return window['go']['backend']['App']['StartBuild']();
 }
+
+export function StartGitHubLogin() {
+  return window['go']['backend']['App']['StartGitHubLogin']();
+}

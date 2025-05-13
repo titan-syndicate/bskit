@@ -10,6 +10,7 @@ import Orders from './pages/Orders'
 import OrderDetails from './pages/Orders/[id]'
 import Settings from './pages/Settings'
 import TerminalPage from './pages/build'
+import Login from './pages/Login'
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="/orders/:id" element={<OrderDetails />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/build" element={<TerminalPage />} />
+          <Route path="/login" element={<Login />} />
         </Route>
       </Routes>
     </HelmetProvider>

@@ -3,6 +3,7 @@ module bskit
 go 1.23
 
 require (
+	github.com/cli/oauth v1.2.0
 	github.com/docker/docker v28.1.1+incompatible
 	github.com/wailsapp/wails/v2 v2.10.1
 )

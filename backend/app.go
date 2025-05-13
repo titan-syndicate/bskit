@@ -6,6 +6,7 @@ import (
 	"log"
 	"path/filepath"
 
+	"bskit/backend/auth"
 	"bskit/backend/pack"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -17,6 +18,7 @@ type App struct {
 	readyChan   chan struct{}
 	eventCtx    context.Context
 	packBuilder *pack.PackBuilder
+	Auth        *auth.Auth
 }
 
 // NewApp creates a new App application struct
@@ -54,6 +56,8 @@ func (a *App) Startup(ctx context.Context) {
 	})
 
 	fmt.Printf("Event listeners set up complete\n")
+
+	a.Auth = auth.NewAuth(ctx)
 }
 
 // StartBuild starts the build process using pack CLI
@@ -69,4 +73,9 @@ func (a *App) StartBuild() {
 	if err := a.packBuilder.Build(absPath); err != nil {
 		runtime.EventsEmit(a.ctx, "build:log", fmt.Sprintf("Error: build failed: %v", err))
 	}
+}
+
+// StartGitHubLogin starts the GitHub device flow authentication
+func (a *App) StartGitHubLogin() (*auth.UserCodeInfo, error) {
+	return a.Auth.StartGitHubLogin()
 }
