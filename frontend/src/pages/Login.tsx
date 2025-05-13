@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { StartGitHubLogin } from '../../wailsjs/go/backend/App'
 import { EventsOn, BrowserOpenURL } from '../../wailsjs/runtime/runtime'
 import { ClipboardIcon, CheckIcon } from '@heroicons/react/16/solid'
+import LoginConfirmation from './LoginConfirmation'
 
 interface UserCodeInfo {
   userCode: string
@@ -31,6 +32,7 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   useEffect(() => {
     EventsOn('github:auth:started', () => {
@@ -41,6 +43,7 @@ export default function Login() {
     EventsOn('github:auth:success', () => {
       console.log('GitHub auth success')
       setIsLoading(false)
+      setIsLoggedIn(true)
     })
 
     EventsOn('github:auth:error', (error) => {
@@ -78,6 +81,10 @@ export default function Login() {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     }
+  }
+
+  if (isLoggedIn) {
+    return <LoginConfirmation />
   }
 
   return (
