@@ -6,6 +6,10 @@ export function CloneRepo(arg1) {
   return window['go']['backend']['App']['CloneRepo'](arg1);
 }
 
+export function DeleteRepo(arg1) {
+  return window['go']['backend']['App']['DeleteRepo'](arg1);
+}
+
 export function GetRecentRepos() {
   return window['go']['backend']['App']['GetRecentRepos']();
 }
@@ -16,6 +20,10 @@ export function GetRepoStatus(arg1) {
 
 export function ListClonedRepos() {
   return window['go']['backend']['App']['ListClonedRepos']();
+}
+
+export function Ping() {
+  return window['go']['backend']['App']['Ping']();
 }
 
 export function SelectDirectory() {
