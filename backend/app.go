@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"path/filepath"
 
 	"bskit/backend/auth"
@@ -178,4 +179,27 @@ func (a *App) GetRepoStatus(url string) (*repo.RepoStatus, error) {
 // ListClonedRepos returns a list of all cloned repositories
 func (a *App) ListClonedRepos() ([]string, error) {
 	return a.repo.ListClonedRepos()
+}
+
+// Add detailed logging to confirm the method is called and to log any errors
+// Add a log to confirm if DeleteRepo is being triggered from the frontend
+func (a *App) DeleteRepo(repoPath string) error {
+	fmt.Printf("DeleteRepo called from frontend with path: %s\n", repoPath)
+	fmt.Printf("Received request to delete repository at path: %s\n", repoPath) // Log the input path
+
+	// Check if the path exists before attempting to delete
+	if _, err := os.Stat(repoPath); os.IsNotExist(err) {
+		fmt.Printf("Error: Repository path does not exist: %s\n", repoPath)
+		return fmt.Errorf("repository path does not exist: %s", repoPath)
+	}
+
+	// Attempt to delete the repository
+	err := repo.DeleteRepo(repoPath)
+	if err != nil {
+		fmt.Printf("Error deleting repository at path: %s, error: %v\n", repoPath, err) // Log the error
+		return fmt.Errorf("failed to delete repository at %s: %w", repoPath, err)
+	}
+
+	fmt.Printf("Successfully deleted repository at path: %s\n", repoPath) // Log successful deletion
+	return nil
 }
