@@ -5,11 +5,15 @@ import {repo} from '../models';
 
 export function CloneRepo(arg1:string):Promise<string>;
 
+export function DeleteRepo(arg1:string):Promise<void>;
+
 export function GetRecentRepos():Promise<Array<auth.Repo>>;
 
 export function GetRepoStatus(arg1:string):Promise<repo.RepoStatus>;
 
 export function ListClonedRepos():Promise<Array<string>>;
+
+export function Ping():Promise<string>;
 
 export function SelectDirectory():Promise<string>;
 
