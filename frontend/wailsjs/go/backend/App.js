@@ -22,10 +22,6 @@ export function ListClonedRepos() {
   return window['go']['backend']['App']['ListClonedRepos']();
 }
 
-export function Ping() {
-  return window['go']['backend']['App']['Ping']();
-}
-
 export function SelectDirectory() {
   return window['go']['backend']['App']['SelectDirectory']();
 }

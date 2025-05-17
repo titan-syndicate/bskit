@@ -13,8 +13,6 @@ export function GetRepoStatus(arg1:string):Promise<repo.RepoStatus>;
 
 export function ListClonedRepos():Promise<Array<string>>;
 
-export function Ping():Promise<string>;
-
 export function SelectDirectory():Promise<string>;
 
 export function StartBuild(arg1:Record<string, any>):Promise<void>;
