@@ -26,7 +26,7 @@ type PackBuilder struct {
 func NewPackBuilder(ctx context.Context) (*PackBuilder, error) {
 	dockerClient, err := client.NewClientWithOpts(
 		client.FromEnv,
-		client.WithVersion("1.48"),
+		client.WithVersion("1.47"),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create docker client: %v", err)
